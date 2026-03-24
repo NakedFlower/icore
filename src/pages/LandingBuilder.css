@@ -1,0 +1,8 @@
+.landing-builder-page {
+  display: grid;
+  gap: 16px;
+}
+
+.landing-builder-result {
+  margin-top: 8px;
+}

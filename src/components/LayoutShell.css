@@ -1,0 +1,30 @@
+.layout-shell {
+  min-height: 100vh;
+}
+
+.layout-shell-sider {
+  background: #ffffff !important;
+  border-right: 1px solid #e5e7eb;
+}
+
+.layout-shell-brand {
+  padding: 20px 16px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.layout-shell-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  height: auto;
+  line-height: normal;
+  padding: 20px 24px;
+}
+
+.layout-shell-title {
+  margin: 0 !important;
+}
+
+.layout-shell-content {
+  padding: 24px;
+}
