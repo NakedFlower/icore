@@ -12,7 +12,8 @@ export const builderApi = {
 
 export const siteApi = {
   listSites: () => api.get("/sites"),
-  createSite: (payload) => api.post("/sites", payload),
+  updateSite: (siteId, payload) => api.put(`/sites/${siteId}`, payload),
+  deleteSite: (siteId) => api.delete(`/sites/${siteId}`),
 };
 
 export const scraperApi = {

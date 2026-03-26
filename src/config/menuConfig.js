@@ -14,4 +14,9 @@ export const TOOL_MENUS = [
     title: "G2B 수집기 제어",
     description: "알림 시간/수신 메일/키워드 설정 및 실행",
   },
+  {
+    key: "future-modules",
+    title: "추가 기능(준비)",
+    description: "향후 모듈 확장을 위한 공간",
+  },
 ];

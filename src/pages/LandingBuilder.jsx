@@ -11,6 +11,11 @@ function LandingBuilder() {
 
   useEffect(() => {
     builderApi.listTemplates().then((response) => setTemplates(response.data));
+    form.setFieldsValue({
+      primary_color: "#2563eb",
+      secondary_color: "#0f172a",
+      background_color: "#f8fafc",
+    });
   }, []);
 
   const handleDeploy = async (values) => {
@@ -28,11 +33,17 @@ function LandingBuilder() {
           body: values.body,
           cta_text: values.cta_text,
           cta_url: values.cta_url,
+          hero_image_url: values.hero_image_url || null,
+          primary_color: values.primary_color,
+          secondary_color: values.secondary_color,
+          background_color: values.background_color,
         },
       };
       const response = await builderApi.deploy(payload);
       setDeployResult(response.data);
       message.success("배포 요청이 생성되었습니다.");
+    } catch (error) {
+      message.error(error?.response?.data?.detail || "배포 요청에 실패했습니다.");
     } finally {
       setIsDeploying(false);
     }
@@ -80,18 +91,38 @@ function LandingBuilder() {
           <Form.Item name="subtitle" label="서브 타이틀" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="body" label="설명 문구" rules={[{ required: true }]}>
+          <Form.Item name="body" label="설명 문구" rules={[{ required: true }]}> 
             <Input.TextArea rows={4} />
+          </Form.Item>
+          <Form.Item name="hero_image_url" label="대표 이미지 URL(선택)">
+            <Input placeholder="https://..." />
           </Form.Item>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name="cta_text" label="CTA 문구" rules={[{ required: true }]}>
+              <Form.Item name="cta_text" label="CTA 문구" rules={[{ required: true }]}> 
                 <Input placeholder="신청하기" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="cta_url" label="CTA 링크" rules={[{ required: true }]}>
                 <Input placeholder="https://..." />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="primary_color" label="Primary Color" rules={[{ required: true }]}> 
+                <Input type="color" className="landing-builder-color" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="secondary_color" label="Secondary Color" rules={[{ required: true }]}> 
+                <Input type="color" className="landing-builder-color" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="background_color" label="Background Color" rules={[{ required: true }]}> 
+                <Input type="color" className="landing-builder-color" />
               </Form.Item>
             </Col>
           </Row>
@@ -112,7 +143,7 @@ function LandingBuilder() {
           type="success"
           showIcon
           message={`배포 완료: ${deployResult.public_url}`}
-          description={deployResult.message}
+          description={`${deployResult.message} (Landing ID: ${deployResult.landing_page_id})`}
         />
       )}
     </div>

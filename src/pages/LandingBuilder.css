@@ -6,3 +6,9 @@
 .landing-builder-result {
   margin-top: 8px;
 }
+
+.landing-builder-color {
+  width: 100%;
+  height: 40px;
+  padding: 4px;
+}
