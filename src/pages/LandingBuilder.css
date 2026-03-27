@@ -3,6 +3,119 @@
   gap: 16px;
 }
 
+.landing-builder-full {
+  width: 100%;
+}
+
+.template-option-card {
+  height: 100%;
+  border-radius: 12px;
+}
+
+.template-mini-preview {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  min-height: 170px;
+  padding: 14px;
+  margin-bottom: 12px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.template-mini-preview h4,
+.template-mini-preview p,
+.template-mini-preview small {
+  margin: 0;
+}
+
+.template-mini-preview h4 {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.template-mini-preview p {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.template-mini-preview small {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.template-option-title {
+  margin-bottom: 4px !important;
+}
+
+.template-option-description {
+  min-height: 42px;
+}
+
+.landing-builder-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.landing-builder-template-description {
+  margin: 0 !important;
+}
+
+.landing-live-preview {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.landing-copy-editor {
+  display: grid;
+  gap: 10px;
+}
+
+.landing-inline-field {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  align-items: end;
+  gap: 12px;
+}
+
+.landing-visual-pane {
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.landing-visual-image {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.landing-visual-placeholder {
+  height: 260px;
+  border-radius: 10px;
+  border: 1px dashed #bfdbfe;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px;
+}
+
+.landing-live-cta {
+  height: 44px;
+  border: 0;
+  font-weight: 600;
+}
+
 .landing-builder-result {
   margin-top: 8px;
 }
@@ -11,4 +124,14 @@
   width: 100%;
   height: 40px;
   padding: 4px;
+}
+
+.deploy-helper-text {
+  margin: 0;
+}
+
+@media (max-width: 992px) {
+  .landing-inline-field {
+    grid-template-columns: 1fr;
+  }
 }
