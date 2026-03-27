@@ -8,7 +8,7 @@ function LayoutShell({ activeKey, onChangeMenu, children }) {
   return (
     <Layout className="layout-shell">
       <Sider width={270} className="layout-shell-sider">
-        <div className="layout-shell-brand">iCore 업무 도구</div>
+        <div className="layout-shell-brand">iCore 업무 플랫폼</div>
         <Menu
           mode="inline"
           selectedKeys={[activeKey]}

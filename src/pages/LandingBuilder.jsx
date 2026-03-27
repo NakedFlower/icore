@@ -17,27 +17,6 @@ import {
 import { builderApi } from "../api/client";
 import "./LandingBuilder.css";
 
-const TEMPLATE_SAMPLE_COPY = {
-  "clean-campaign": {
-    title: "성과로 이어지는 실무형 교육",
-    subtitle: "현업에서 바로 적용하는 커리큘럼",
-    body: "핵심 이론부터 실습까지 한 번에 정리하고, 실제 업무에 맞춘 결과물을 완성해 보세요.",
-    cta_text: "지금 신청하기",
-  },
-  "dark-product": {
-    title: "팀의 생산성을 바꾸는 솔루션",
-    subtitle: "기술 중심 조직을 위한 도입 가이드",
-    body: "복잡한 프로세스를 자동화하고, 운영 효율을 높이는 실전 방법을 한 화면에서 확인하세요.",
-    cta_text: "데모 요청하기",
-  },
-  "event-highlight": {
-    title: "2026 스페셜 프로그램 오픈",
-    subtitle: "정원 제한 · 얼리버드 혜택 제공",
-    body: "선착순 신청자에게는 전용 자료와 사전 세션 참여 혜택이 제공됩니다. 일정 확인 후 바로 등록하세요.",
-    cta_text: "참가 등록하기",
-  },
-};
-
 const DEPLOY_RETENTION_OPTIONS = [
   { label: "7일", value: 7 },
   { label: "30일", value: 30 },
@@ -48,6 +27,8 @@ const DEPLOY_RETENTION_OPTIONS = [
 function LandingBuilder() {
   const [templates, setTemplates] = useState([]);
   const [isTemplateLoading, setIsTemplateLoading] = useState(false);
+  const [isTemplateDetailLoading, setIsTemplateDetailLoading] = useState(false);
+  const [pendingTemplateId, setPendingTemplateId] = useState(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
   const [isDeployModalOpen, setIsDeployModalOpen] = useState(false);
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
@@ -97,19 +78,35 @@ function LandingBuilder() {
     });
   }, [form]);
 
-  const buildPreviewCopy = (templateId) => {
-    const sampleCopy = TEMPLATE_SAMPLE_COPY[templateId] || TEMPLATE_SAMPLE_COPY["clean-campaign"];
-    return {
-      title: values.title || sampleCopy.title,
-      subtitle: values.subtitle || sampleCopy.subtitle,
-      body: values.body || sampleCopy.body,
-      cta_text: values.cta_text || sampleCopy.cta_text,
-    };
-  };
+  const handleTemplateSelect = async (templateId) => {
+    setPendingTemplateId(templateId);
+    setIsTemplateDetailLoading(true);
+    try {
+      const response = await builderApi.getTemplateDetail(templateId);
+      const detail = response.data;
 
-  const handleTemplateSelect = (templateId) => {
-    setSelectedTemplateId(templateId);
-    setDeployResult(null);
+      form.setFieldsValue({
+        title: detail.title || "",
+        subtitle: detail.subtitle || "",
+        body: detail.body || "",
+        cta_text: detail.cta_text || "",
+        hero_image_url: detail.hero_image_url || "",
+        title_color: detail.title_color || "#0f172a",
+        subtitle_color: detail.subtitle_color || "#2563eb",
+        body_color: detail.body_color || "#334155",
+        cta_text_color: detail.cta_text_color || "#ffffff",
+        cta_bg_color: detail.cta_bg_color || "#2563eb",
+        background_color: detail.background_color || "#f8fafc",
+      });
+
+      setSelectedTemplateId(templateId);
+      setDeployResult(null);
+    } catch (error) {
+      message.error(error?.response?.data?.detail || "선택한 템플릿을 GCS에서 불러오지 못했습니다.");
+    } finally {
+      setIsTemplateDetailLoading(false);
+      setPendingTemplateId(null);
+    }
   };
 
   const openDeployModal = async () => {
@@ -190,17 +187,13 @@ function LandingBuilder() {
           >
             <Row gutter={[16, 16]}>
               {templates.map((template) => {
-                const previewCopy = buildPreviewCopy(template.id);
                 return (
                   <Col xs={24} lg={8} key={template.id}>
                     <Card className="template-option-card" bodyStyle={{ padding: 14 }}>
-                      <div
-                        className="template-mini-preview"
-                        style={{ backgroundColor: values.background_color || "#f8fafc" }}
-                      >
-                        <h4 style={{ color: values.title_color || "#0f172a" }}>{previewCopy.title}</h4>
-                        <p style={{ color: values.subtitle_color || "#2563eb" }}>{previewCopy.subtitle}</p>
-                        <small style={{ color: values.body_color || "#334155" }}>{previewCopy.body}</small>
+                      <div className="template-mini-preview">
+                        <h4>{template.name}</h4>
+                        <p>{template.description}</p>
+                        <small>선택 시 GCS 템플릿 본문을 불러옵니다.</small>
                       </div>
                       <Typography.Title level={5} className="template-option-title">
                         {template.name}
@@ -208,7 +201,13 @@ function LandingBuilder() {
                       <Typography.Paragraph type="secondary" className="template-option-description">
                         {template.description}
                       </Typography.Paragraph>
-                      <Button type="primary" block onClick={() => handleTemplateSelect(template.id)}>
+                      <Button
+                        type="primary"
+                        block
+                        loading={isTemplateDetailLoading && pendingTemplateId === template.id}
+                        disabled={isTemplateDetailLoading}
+                        onClick={() => handleTemplateSelect(template.id)}
+                      >
                         이 템플릿으로 시작
                       </Button>
                     </Card>

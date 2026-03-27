@@ -7,6 +7,7 @@ const api = axios.create({
 
 export const builderApi = {
   listTemplates: () => api.get("/builder/templates"),
+  getTemplateDetail: (templateId) => api.get(`/builder/templates/${templateId}`),
   deploy: (payload) => api.post("/builder/deploy", payload),
 };
 

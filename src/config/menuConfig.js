@@ -6,7 +6,7 @@ export const TOOL_MENUS = [
   },
   {
     key: "site-manager",
-    title: "웹사이트 관리",
+    title: "랜딩 페이지 관리",
     description: "대주제-세부사업 링크 중심 목록 관리",
   },
   {
