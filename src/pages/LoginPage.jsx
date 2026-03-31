@@ -1,5 +1,5 @@
 import { Button, Card, Form, Input, Typography, message } from "antd";
-import { authApi, AUTH_TOKEN_KEY } from "../api/client";
+import { API_BASE_URL, authApi, AUTH_TOKEN_KEY } from "../api/client";
 import "./LoginPage.css";
 
 function LoginPage({ onSuccess }) {
@@ -12,6 +12,16 @@ function LoginPage({ onSuccess }) {
       onSuccess({ username: response.data.username, role: response.data.role });
       message.success("로그인되었습니다.");
     } catch (error) {
+      const isPotentialMixedContent =
+        typeof window !== "undefined" &&
+        window.location.protocol === "https:" &&
+        String(API_BASE_URL).startsWith("http://");
+
+      if (isPotentialMixedContent) {
+        message.error("HTTPS 페이지에서 HTTP API를 호출해 차단되었습니다. API 주소를 HTTPS로 설정해주세요.");
+        return;
+      }
+
       message.error(error?.response?.data?.detail || "로그인에 실패했습니다.");
     }
   };
