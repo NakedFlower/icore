@@ -12,6 +12,7 @@ import {
   Select,
   Space,
   Typography,
+  Upload,
   message,
 } from "antd";
 import { builderApi } from "../api/client";
@@ -24,6 +25,26 @@ const DEPLOY_RETENTION_OPTIONS = [
   { label: "365일", value: 365 },
 ];
 
+const MAJOR_CATEGORY_OPTIONS = [
+  { label: "업체별", value: "업체별" },
+  { label: "CSP", value: "CSP" },
+  { label: "지역별", value: "지역별" },
+];
+
+const MINOR_CATEGORY_BY_MAJOR = {
+  업체별: ["제조", "유통", "교육", "공공", "금융", "스타트업"],
+  CSP: ["AWS", "Google Cloud", "Azure", "Naver Cloud", "KT Cloud"],
+  지역별: ["울산", "서울", "부산", "대전", "광주", "제주"],
+};
+
+const toBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+  });
+
 function LandingBuilder() {
   const [templates, setTemplates] = useState([]);
   const [isTemplateLoading, setIsTemplateLoading] = useState(false);
@@ -34,8 +55,18 @@ function LandingBuilder() {
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployResult, setDeployResult] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadedImagePreview, setUploadedImagePreview] = useState("");
+  const [uploadedImageBase64, setUploadedImageBase64] = useState("");
+  const [uploadedImageMimeType, setUploadedImageMimeType] = useState("");
+  const [uploadedImageFileName, setUploadedImageFileName] = useState("");
   const [form] = Form.useForm();
   const values = Form.useWatch([], form) || {};
+
+  const selectedMajorCategories = values.major_categories || [];
+  const availableMinorOptions = Array.from(
+    new Set(selectedMajorCategories.flatMap((major) => MINOR_CATEGORY_BY_MAJOR[major] || []))
+  ).map((label) => ({ label, value: label }));
 
   const selectedTemplate = useMemo(
     () => templates.find((template) => template.id === selectedTemplateId) || null,
@@ -71,6 +102,8 @@ function LandingBuilder() {
       background_color: "#f8fafc",
       business_topic: "",
       business_name: "",
+      major_categories: [],
+      minor_categories: [],
       slug: "",
       custom_domain: "",
       retention_days: 30,
@@ -150,8 +183,11 @@ function LandingBuilder() {
         template_id: selectedTemplateId,
         business_topic: values.business_topic,
         business_name: values.business_name,
+        major_categories: values.major_categories || [],
+        minor_categories: values.minor_categories || [],
         slug: values.slug,
         custom_domain: values.custom_domain || null,
+        retention_days: values.retention_days || 30,
         content: {
           title: values.title,
           subtitle: values.subtitle,
@@ -159,6 +195,9 @@ function LandingBuilder() {
           cta_text: values.cta_text,
           cta_url: values.cta_url,
           hero_image_url: values.hero_image_url || null,
+          hero_image_file_name: uploadedImageFileName || null,
+          hero_image_mime_type: uploadedImageMimeType || null,
+          hero_image_base64: uploadedImageBase64 || null,
           primary_color: values.cta_bg_color,
           secondary_color: values.title_color,
           background_color: values.background_color,
@@ -174,6 +213,26 @@ function LandingBuilder() {
     } finally {
       setIsDeploying(false);
     }
+  };
+
+  const handleUploadImage = async (file) => {
+    setUploadingImage(true);
+    try {
+      const dataUrl = await toBase64(file);
+      const [prefix, rawBase64] = String(dataUrl).split(",", 2);
+      const mime = prefix.match(/^data:(.*?);base64$/)?.[1] || file.type || "image/png";
+      setUploadedImagePreview(String(dataUrl));
+      setUploadedImageBase64(rawBase64 || "");
+      setUploadedImageMimeType(mime);
+      setUploadedImageFileName(file.name || "hero-image.png");
+      form.setFieldValue("hero_image_url", "");
+      message.success("이미지 파일이 준비되었습니다. 배포 시 함께 업로드됩니다.");
+    } catch (error) {
+      message.error("이미지 파일을 읽지 못했습니다.");
+    } finally {
+      setUploadingImage(false);
+    }
+    return false;
   };
 
   return (
@@ -307,6 +366,24 @@ function LandingBuilder() {
                         <Input placeholder="https://..." />
                       </Form.Item>
 
+                      <Form.Item label="대표 이미지 파일 업로드(선택)">
+                        <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                          <Upload
+                            maxCount={1}
+                            accept="image/*"
+                            beforeUpload={handleUploadImage}
+                            showUploadList={false}
+                          >
+                            <Button loading={uploadingImage}>
+                              로컬에서 이미지 선택
+                            </Button>
+                          </Upload>
+                          {uploadedImageFileName ? (
+                            <Typography.Text type="secondary">선택됨: {uploadedImageFileName}</Typography.Text>
+                          ) : null}
+                        </Space>
+                      </Form.Item>
+
                       <Row gutter={16}>
                         <Col xs={24} lg={12}>
                           <Form.Item
@@ -352,6 +429,8 @@ function LandingBuilder() {
                     <div className="landing-visual-pane">
                       {values.hero_image_url ? (
                         <img src={values.hero_image_url} alt="랜딩 대표" className="landing-visual-image" />
+                      ) : uploadedImagePreview ? (
+                        <img src={uploadedImagePreview} alt="업로드 대표" className="landing-visual-image" />
                       ) : (
                         <div className="landing-visual-placeholder">이미지 URL을 입력하면 여기에 표시됩니다.</div>
                       )}
@@ -427,6 +506,31 @@ function LandingBuilder() {
 
         <Row gutter={16}>
           <Col span={12}>
+            <Form.Item
+              name="major_categories"
+              label="대분류(복수 선택)"
+              rules={[{ required: true, message: "최소 1개 이상 선택하세요." }]}
+            >
+              <Select mode="multiple" options={MAJOR_CATEGORY_OPTIONS} placeholder="업체별, CSP, 지역별" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="minor_categories"
+              label="소분류(복수 선택)"
+              rules={[{ required: true, message: "최소 1개 이상 선택하세요." }]}
+            >
+              <Select
+                mode="multiple"
+                options={availableMinorOptions}
+                placeholder="대분류를 먼저 선택하세요"
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
             <Form.Item name="custom_domain" label="커스텀 도메인(선택)">
               <Input placeholder="academy.icore.co.kr" />
             </Form.Item>
@@ -443,7 +547,7 @@ function LandingBuilder() {
         </Form.Item>
 
         <Typography.Paragraph type="secondary" className="deploy-helper-text">
-          유지 기간과 배포 범위는 운영 정책 확인용 값이며, 실제 페이지 배포는 링크 생성과 동시에 완료됩니다.
+          유지 기간이 지나면 페이지는 사용자 목록에서 숨김 처리되며, 버킷 객체는 유지됩니다.
         </Typography.Paragraph>
       </Modal>
 

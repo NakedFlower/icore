@@ -5,6 +5,20 @@ const api = axios.create({
   timeout: 10000,
 });
 
+export const AUTH_TOKEN_KEY = "icore_admin_access_token";
+
+api.interceptors.request.use((config) => {
+  const token = window.localStorage.getItem(AUTH_TOKEN_KEY);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const authApi = {
+  login: (payload) => api.post("/auth/login", payload),
+};
+
 export const builderApi = {
   listTemplates: () => api.get("/builder/templates"),
   getTemplateDetail: (templateId) => api.get(`/builder/templates/${templateId}`),

@@ -1,10 +1,10 @@
-import { Layout, Menu, Typography } from "antd";
+import { Button, Layout, Menu, Typography } from "antd";
 import { TOOL_MENUS } from "../config/menuConfig";
 import "./LayoutShell.css";
 
 const { Header, Sider, Content } = Layout;
 
-function LayoutShell({ activeKey, onChangeMenu, children }) {
+function LayoutShell({ activeKey, onChangeMenu, onLogout, children }) {
   return (
     <Layout className="layout-shell">
       <Sider width={270} className="layout-shell-sider">
@@ -21,9 +21,12 @@ function LayoutShell({ activeKey, onChangeMenu, children }) {
       </Sider>
       <Layout>
         <Header className="layout-shell-header">
-          <Typography.Title level={4} className="layout-shell-title">
-            {TOOL_MENUS.find((menu) => menu.key === activeKey)?.title}
-          </Typography.Title>
+          <div className="layout-shell-header-row">
+            <Typography.Title level={4} className="layout-shell-title">
+              {TOOL_MENUS.find((menu) => menu.key === activeKey)?.title}
+            </Typography.Title>
+            <Button onClick={onLogout}>로그아웃</Button>
+          </div>
         </Header>
         <Content className="layout-shell-content">{children}</Content>
       </Layout>

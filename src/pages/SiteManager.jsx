@@ -44,6 +44,8 @@ function SiteManager() {
     form.setFieldsValue({
       business_topic: site.business_topic,
       business_name: site.business_name,
+      major_categories: site.major_categories || [],
+      minor_categories: site.minor_categories || [],
       status: site.status,
     });
   };
@@ -87,6 +89,16 @@ function SiteManager() {
           columns={[
             { title: "대주제", dataIndex: "business_topic" },
             { title: "소주제", dataIndex: "business_name" },
+            {
+              title: "대분류",
+              dataIndex: "major_categories",
+              render: (values) => (values || []).join(", "),
+            },
+            {
+              title: "소분류",
+              dataIndex: "minor_categories",
+              render: (values) => (values || []).join(", "),
+            },
             { title: "슬러그", dataIndex: "slug" },
             {
               title: "바로가기",
@@ -143,6 +155,12 @@ function SiteManager() {
           </Form.Item>
           <Form.Item name="business_name" label="소주제" rules={[{ required: true }]}>
             <Input />
+          </Form.Item>
+          <Form.Item name="major_categories" label="대분류(복수 가능)">
+            <Select mode="tags" tokenSeparators={[","]} />
+          </Form.Item>
+          <Form.Item name="minor_categories" label="소분류(복수 가능)">
+            <Select mode="tags" tokenSeparators={[","]} />
           </Form.Item>
           <Form.Item name="status" label="상태" rules={[{ required: true }]}>
             <Select

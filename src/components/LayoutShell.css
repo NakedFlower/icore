@@ -25,6 +25,13 @@
   margin: 0 !important;
 }
 
+.layout-shell-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .layout-shell-content {
   padding: 24px;
 }
