@@ -1,4 +1,4 @@
-# DB 설계 초안 (PostgreSQL 기준)
+# DB 설계 초안 (VM 내부 MySQL 기준)
 
 ## 1) business_sites
 - `id` UUID PK
