@@ -4,13 +4,16 @@ import {
   Button,
   Card,
   Col,
+  Divider,
   Empty,
   Form,
   Input,
   Modal,
   Row,
+  Segmented,
   Select,
   Space,
+  Tag,
   Typography,
   Upload,
   message,
@@ -37,6 +40,49 @@ const MINOR_CATEGORY_BY_MAJOR = {
   지역별: ["울산", "서울", "부산", "대전", "광주", "제주"],
 };
 
+const COLOR_PRESETS = [
+  {
+    key: "calm-lab",
+    name: "Calm Lab",
+    cta_bg_color: "#0ea5e9",
+    title_color: "#0f172a",
+    subtitle_color: "#0369a1",
+    body_color: "#334155",
+    cta_text_color: "#ffffff",
+    background_color: "#f0f9ff",
+  },
+  {
+    key: "sunset-growth",
+    name: "Sunset Growth",
+    cta_bg_color: "#f97316",
+    title_color: "#7c2d12",
+    subtitle_color: "#c2410c",
+    body_color: "#9a3412",
+    cta_text_color: "#fff7ed",
+    background_color: "#fff7ed",
+  },
+  {
+    key: "forest-ops",
+    name: "Forest Ops",
+    cta_bg_color: "#15803d",
+    title_color: "#14532d",
+    subtitle_color: "#166534",
+    body_color: "#365314",
+    cta_text_color: "#f7fee7",
+    background_color: "#f7fee7",
+  },
+  {
+    key: "midnight-wave",
+    name: "Midnight Wave",
+    cta_bg_color: "#3b82f6",
+    title_color: "#e2e8f0",
+    subtitle_color: "#a5b4fc",
+    body_color: "#cbd5e1",
+    cta_text_color: "#ffffff",
+    background_color: "#020617",
+  },
+];
+
 const toBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -60,6 +106,7 @@ function LandingBuilder() {
   const [uploadedImageBase64, setUploadedImageBase64] = useState("");
   const [uploadedImageMimeType, setUploadedImageMimeType] = useState("");
   const [uploadedImageFileName, setUploadedImageFileName] = useState("");
+  const [previewViewport, setPreviewViewport] = useState("desktop");
   const [form] = Form.useForm();
   const values = Form.useWatch([], form) || {};
 
@@ -110,6 +157,19 @@ function LandingBuilder() {
       publish_scope: "public",
     });
   }, [form]);
+
+  const applyColorPreset = (presetKey) => {
+    const preset = COLOR_PRESETS.find((item) => item.key === presetKey);
+    if (!preset) return;
+    form.setFieldsValue({
+      cta_bg_color: preset.cta_bg_color,
+      title_color: preset.title_color,
+      subtitle_color: preset.subtitle_color,
+      body_color: preset.body_color,
+      cta_text_color: preset.cta_text_color,
+      background_color: preset.background_color,
+    });
+  };
 
   const handleTemplateSelect = async (templateId) => {
     setPendingTemplateId(templateId);
@@ -241,18 +301,23 @@ function LandingBuilder() {
         {!selectedTemplate ? (
           <Card
             title="1단계 · 템플릿 선택"
-            extra={<Typography.Text type="secondary">원하는 화면 디자인을 먼저 선택하세요.</Typography.Text>}
+            extra={<Typography.Text type="secondary">원하는 화면 분위기를 먼저 선택하세요.</Typography.Text>}
             loading={isTemplateLoading}
           >
             <Row gutter={[16, 16]}>
               {templates.map((template) => {
                 return (
                   <Col xs={24} lg={8} key={template.id}>
-                    <Card className="template-option-card" bodyStyle={{ padding: 14 }}>
-                      <div className="template-mini-preview">
+                    <Card className="template-option-card" bodyStyle={{ padding: 16 }}>
+                      <div className={`template-mini-preview template-${template.id}`}>
+                        <div className="template-micro-nav">
+                          <span />
+                          <span />
+                          <span />
+                        </div>
                         <h4>{template.name}</h4>
                         <p>{template.description}</p>
-                        <small>선택 시 GCS 템플릿 본문을 불러옵니다.</small>
+                        <small>선택 시 본문/색상 초기값 자동 로드</small>
                       </div>
                       <Typography.Title level={5} className="template-option-title">
                         {template.name}
@@ -285,6 +350,11 @@ function LandingBuilder() {
                   <Typography.Paragraph type="secondary" className="landing-builder-template-description">
                     {selectedTemplate.name} · {selectedTemplate.description}
                   </Typography.Paragraph>
+                  <Space size={8} wrap>
+                    <Tag color="blue">실시간 최종본 미리보기</Tag>
+                    <Tag color="geekblue">색상 프리셋 제공</Tag>
+                    <Tag color="cyan">모바일/데스크톱 전환</Tag>
+                  </Space>
                 </div>
                 <Space>
                   <Button onClick={() => setSelectedTemplateId(null)}>템플릿 다시 고르기</Button>
@@ -296,12 +366,9 @@ function LandingBuilder() {
             </Card>
 
             <Card title="2단계 · 화면 문구 입력">
-              <div
-                className="landing-live-preview"
-                style={{ backgroundColor: values.background_color || "#f8fafc" }}
-              >
+              <div className="landing-live-layout" style={{ backgroundColor: values.background_color || "#f8fafc" }}>
                 <Row gutter={[24, 24]}>
-                  <Col xs={24} lg={15}>
+                  <Col xs={24} lg={13}>
                     <div className="landing-copy-editor">
                       <div className="landing-inline-field">
                         <Form.Item
@@ -310,12 +377,12 @@ function LandingBuilder() {
                           rules={[{ required: true, message: "메인 타이틀을 입력하세요." }]}
                         >
                           <Input
-                            placeholder="문구를 입력하세요."
+                            placeholder="예시 : 울산의 미래를 코딩하다"
                             style={{
                               color: values.title_color || "#0f172a",
-                              fontSize: 36,
+                              fontSize: 26,
                               fontWeight: 700,
-                              height: 56,
+                              height: 48,
                             }}
                           />
                         </Form.Item>
@@ -331,12 +398,12 @@ function LandingBuilder() {
                           rules={[{ required: true, message: "서브 타이틀을 입력하세요." }]}
                         >
                           <Input
-                            placeholder="문구를 입력하세요."
+                            placeholder="예시 : 빅테크 AI 인재 양성 프로젝트"
                             style={{
                               color: values.subtitle_color || "#2563eb",
-                              fontSize: 22,
+                              fontSize: 18,
                               fontWeight: 600,
-                              height: 46,
+                              height: 42,
                             }}
                           />
                         </Form.Item>
@@ -352,9 +419,9 @@ function LandingBuilder() {
                           rules={[{ required: true, message: "설명 문구를 입력하세요." }]}
                         >
                           <Input.TextArea
-                            rows={4}
-                            placeholder="문구를 입력하세요."
-                            style={{ color: values.body_color || "#334155", fontSize: 17, lineHeight: 1.8 }}
+                            rows={5}
+                            placeholder="예시 : 울산 데이터센터 시대를 이끌어갈 실무 중심 AI/클라우드 교육 과정을 소개합니다."
+                            style={{ color: values.body_color || "#334155", fontSize: 15, lineHeight: 1.8 }}
                           />
                         </Form.Item>
                         <Form.Item name="body_color" label="설명 문구 색상" rules={[{ required: true }]}>
@@ -363,7 +430,7 @@ function LandingBuilder() {
                       </div>
 
                       <Form.Item name="hero_image_url" label="대표 이미지 URL(선택)">
-                        <Input placeholder="https://..." />
+                        <Input placeholder="예시 : https://images.unsplash.com/..." />
                       </Form.Item>
 
                       <Form.Item label="대표 이미지 파일 업로드(선택)">
@@ -391,7 +458,7 @@ function LandingBuilder() {
                             label="버튼 문구"
                             rules={[{ required: true, message: "버튼 문구를 입력하세요." }]}
                           >
-                            <Input placeholder="문구를 입력하세요." />
+                            <Input placeholder="예시 : 지금 신청하기" />
                           </Form.Item>
                         </Col>
                         <Col xs={24} lg={12}>
@@ -400,10 +467,29 @@ function LandingBuilder() {
                             label="버튼 링크"
                             rules={[{ required: true, message: "버튼 링크를 입력하세요." }]}
                           >
-                            <Input placeholder="https://..." />
+                            <Input placeholder="예시 : https://tool.icore.co.kr/apply" />
                           </Form.Item>
                         </Col>
                       </Row>
+
+                      <Divider className="landing-divider" />
+
+                      <div className="landing-design-tools">
+                        <Typography.Text strong>디자인 프리셋</Typography.Text>
+                        <div className="landing-preset-list">
+                          {COLOR_PRESETS.map((preset) => (
+                            <button
+                              key={preset.key}
+                              type="button"
+                              className="landing-preset-chip"
+                              onClick={() => applyColorPreset(preset.key)}
+                            >
+                              <span style={{ background: preset.cta_bg_color }} />
+                              {preset.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
                       <Row gutter={16}>
                         <Col xs={24} lg={8}>
@@ -425,24 +511,67 @@ function LandingBuilder() {
                     </div>
                   </Col>
 
-                  <Col xs={24} lg={9}>
-                    <div className="landing-visual-pane">
-                      {values.hero_image_url ? (
-                        <img src={values.hero_image_url} alt="랜딩 대표" className="landing-visual-image" />
-                      ) : uploadedImagePreview ? (
-                        <img src={uploadedImagePreview} alt="업로드 대표" className="landing-visual-image" />
-                      ) : (
-                        <div className="landing-visual-placeholder">이미지 URL을 입력하면 여기에 표시됩니다.</div>
-                      )}
-                      <Button
-                        className="landing-live-cta"
-                        style={{
-                          backgroundColor: values.cta_bg_color || "#2563eb",
-                          color: values.cta_text_color || "#ffffff",
-                        }}
+                  <Col xs={24} lg={11}>
+                    <div className="landing-preview-frame">
+                      <div className="landing-preview-topbar">
+                        <Typography.Text strong>최종본 미리보기</Typography.Text>
+                        <Segmented
+                          options={[
+                            { label: "Desktop", value: "desktop" },
+                            { label: "Mobile", value: "mobile" },
+                          ]}
+                          value={previewViewport}
+                          onChange={setPreviewViewport}
+                          size="small"
+                        />
+                      </div>
+
+                      <div
+                        className={`landing-visual-pane ${previewViewport === "mobile" ? "is-mobile" : ""}`}
+                        style={{ backgroundColor: values.background_color || "#f8fafc" }}
                       >
-                        {values.cta_text || "문구를 입력하세요."}
-                      </Button>
+                        <div className="preview-nav">
+                          <strong>{values.business_name || "예시 : iCore AI Education"}</strong>
+                          <span>Template · {selectedTemplate.name}</span>
+                        </div>
+
+                        <div className="preview-hero">
+                          <h2 style={{ color: values.title_color || "#0f172a" }}>
+                            {values.title || "예시 : 울산의 미래를 코딩하다"}
+                          </h2>
+                          <p className="preview-subtitle" style={{ color: values.subtitle_color || "#2563eb" }}>
+                            {values.subtitle || "예시 : 빅테크 AI 인재 양성 프로젝트"}
+                          </p>
+                          <p className="preview-body" style={{ color: values.body_color || "#334155" }}>
+                            {values.body ||
+                              "예시 : 실무 중심 커리큘럼과 프로젝트 기반 학습으로 성장을 가속화하세요."}
+                          </p>
+                        </div>
+
+                        {values.hero_image_url ? (
+                          <img src={values.hero_image_url} alt="랜딩 대표" className="landing-visual-image" />
+                        ) : uploadedImagePreview ? (
+                          <img src={uploadedImagePreview} alt="업로드 대표" className="landing-visual-image" />
+                        ) : (
+                          <div className="landing-visual-placeholder">대표 이미지를 넣으면 최종 랜딩처럼 보여줍니다.</div>
+                        )}
+
+                        <div className="preview-feature-grid">
+                          <article>현업 중심 커리큘럼</article>
+                          <article>전문가 피드백</article>
+                          <article>프로젝트 포트폴리오</article>
+                        </div>
+
+                        <Button
+                          className="landing-live-cta"
+                          style={{
+                            backgroundColor: values.cta_bg_color || "#2563eb",
+                            color: values.cta_text_color || "#ffffff",
+                          }}
+                        >
+                          {values.cta_text || "예시 : 지금 신청하기"}
+                        </Button>
+                      </div>
                     </div>
                   </Col>
                 </Row>
@@ -475,7 +604,7 @@ function LandingBuilder() {
               label="화면 분류"
               rules={[{ required: true, message: "화면 분류를 입력하세요." }]}
             >
-              <Input placeholder="예: 교육 프로그램 / 이벤트 / 제품 소개" />
+              <Input placeholder="예시 : 교육 프로그램 / 이벤트 / 제품 소개" />
             </Form.Item>
           </Col>
         </Row>
@@ -487,7 +616,7 @@ function LandingBuilder() {
               label="화면 이름"
               rules={[{ required: true, message: "화면 이름을 입력하세요." }]}
             >
-              <Input placeholder="예: 2026 AI 실무 과정" />
+              <Input placeholder="예시 : 2026 AI 실무 과정" />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -499,7 +628,7 @@ function LandingBuilder() {
                 { pattern: /^[a-z0-9-]+$/, message: "영문 소문자/숫자/하이픈만 사용 가능합니다." },
               ]}
             >
-              <Input placeholder="ai-course-2026" />
+              <Input placeholder="예시 : ai-course-2026" />
             </Form.Item>
           </Col>
         </Row>
@@ -532,7 +661,7 @@ function LandingBuilder() {
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item name="custom_domain" label="커스텀 도메인(선택)">
-              <Input placeholder="academy.icore.co.kr" />
+              <Input placeholder="예시 : academy.icore.co.kr" />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -543,7 +672,7 @@ function LandingBuilder() {
         </Row>
 
         <Form.Item name="publish_scope" label="배포 범위">
-          <Input placeholder="예: public / internal" />
+          <Input placeholder="예시 : public / internal" />
         </Form.Item>
 
         <Typography.Paragraph type="secondary" className="deploy-helper-text">
