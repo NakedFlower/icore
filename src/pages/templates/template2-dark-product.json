@@ -1,0 +1,16 @@
+{
+  "id": "dark-product",
+  "name": "Template 2 - Dark Product",
+  "description": "High-contrast product style with strong CTA and metrics-like cards.",
+  "title": "Scale your AI stack with production-ready workflows",
+  "subtitle": "Operate faster with secure cloud architecture",
+  "body": "Design, deploy, and optimize an enterprise-ready AI platform with deep practical sessions and architecture coaching.",
+  "cta_text": "See curriculum",
+  "hero_image_url": "",
+  "title_color": "#f8fafc",
+  "subtitle_color": "#22d3ee",
+  "body_color": "#cbd5e1",
+  "cta_text_color": "#ffffff",
+  "cta_bg_color": "#0891b2",
+  "background_color": "#030712"
+}

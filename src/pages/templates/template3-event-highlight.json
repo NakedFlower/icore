@@ -1,0 +1,16 @@
+{
+  "id": "event-highlight",
+  "name": "Template 3 - Event Highlight",
+  "description": "Poster-like event recruitment layout with playful contrast.",
+  "title": "Join the next AI acceleration cohort",
+  "subtitle": "Limited seats for project-based mentoring",
+  "body": "Get a personalized learning route, weekly checkpoints, and direct feedback from industry mentors.",
+  "cta_text": "Reserve your spot",
+  "hero_image_url": "",
+  "title_color": "#111827",
+  "subtitle_color": "#f97316",
+  "body_color": "#374151",
+  "cta_text_color": "#ffffff",
+  "cta_bg_color": "#111827",
+  "background_color": "#fff7ed"
+}

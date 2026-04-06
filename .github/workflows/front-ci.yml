@@ -12,6 +12,7 @@ on:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCS_BUCKET: ${{ secrets.BUCKET_ADMIN_WEB }}
+  TEMPLATE_BUCKET: ${{ secrets.BUCKET_SITE_TEMPLATES || 'icore-site-templates' }}
   GCP_CDN_URL_MAP: ${{ secrets.GCP_CDN_URL_MAP }}
 
 jobs:
@@ -55,6 +56,12 @@ jobs:
           gsutil -m rsync -r -d ./dist gs://${{ env.GCS_BUCKET }}/
           gsutil -m setmeta -h "Cache-Control:no-cache, max-age=0" gs://${{ env.GCS_BUCKET }}/index.html
           gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" gs://${{ env.GCS_BUCKET }}/assets/**
+
+      - name: Upload landing template JSONs to GCS
+        if: github.event_name == 'push' && github.ref == 'refs/heads/front'
+        run: |
+          gsutil -m rsync -r -d ./src/pages/templates gs://${{ env.TEMPLATE_BUCKET }}/templates
+          gsutil -m setmeta -h "Cache-Control:no-cache, max-age=0" gs://${{ env.TEMPLATE_BUCKET }}/templates/*.json
 
       - name: Invalidate Cloud CDN cache
         if: github.event_name == 'push' && github.ref == 'refs/heads/front' && env.GCP_CDN_URL_MAP != ''

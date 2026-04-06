@@ -1,0 +1,16 @@
+{
+  "id": "clean-campaign",
+  "name": "Template 1 - Clean Campaign",
+  "description": "Bright and editorial campaign layout for education and onboarding pages.",
+  "title": "Build your cloud and AI roadmap in Ulsan",
+  "subtitle": "Hands-on training with real projects",
+  "body": "From cloud fundamentals to generative AI operations, join a practical program designed for immediate impact.",
+  "cta_text": "Apply now",
+  "hero_image_url": "",
+  "title_color": "#0f172a",
+  "subtitle_color": "#0ea5e9",
+  "body_color": "#334155",
+  "cta_text_color": "#ffffff",
+  "cta_bg_color": "#0ea5e9",
+  "background_color": "#f8fafc"
+}
