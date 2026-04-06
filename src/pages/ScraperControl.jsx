@@ -1,5 +1,18 @@
 import { useEffect, useState } from "react";
-import { Button, Card, Form, InputNumber, Radio, Select, Space, Switch, TimePicker, message } from "antd";
+import {
+  Alert,
+  Button,
+  Card,
+  Descriptions,
+  Form,
+  InputNumber,
+  Radio,
+  Select,
+  Space,
+  Switch,
+  TimePicker,
+  message,
+} from "antd";
 import dayjs from "dayjs";
 import { scraperApi } from "../api/client";
 import "./ScraperControl.css";
@@ -7,6 +20,7 @@ import "./ScraperControl.css";
 function ScraperControl() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [schedulerStatus, setSchedulerStatus] = useState(null);
 
   const loadConfig = async () => {
     setLoading(true);
@@ -23,6 +37,7 @@ function ScraperControl() {
         receiver_emails: config.receiver_emails,
         keywords: config.keywords,
       });
+      setSchedulerStatus(config.scheduler_status || null);
     } catch (error) {
       message.error(error?.response?.data?.detail || "설정 조회에 실패했습니다.");
     } finally {
@@ -48,6 +63,9 @@ function ScraperControl() {
       };
       const response = await scraperApi.updateConfig(payload);
       message.success(response.data.message);
+      if (response.data.scheduler) {
+        setSchedulerStatus(response.data.scheduler);
+      }
     } catch (error) {
       message.error(error?.response?.data?.detail || "설정 저장에 실패했습니다.");
     }
@@ -72,6 +90,28 @@ function ScraperControl() {
           </Button>
         }
       >
+        {schedulerStatus && (
+          <Alert
+            className="scheduler-status-alert"
+            type={schedulerStatus.connected ? "success" : "warning"}
+            message={schedulerStatus.connected ? "Cloud Scheduler 연결됨" : "Cloud Scheduler 연결 필요"}
+            description={schedulerStatus.message}
+            showIcon
+          />
+        )}
+        {schedulerStatus && (
+          <Descriptions size="small" bordered column={1} className="scheduler-status-grid">
+            <Descriptions.Item label="잡 이름">{schedulerStatus.job_name || "(미설정)"}</Descriptions.Item>
+            <Descriptions.Item label="스케줄">{schedulerStatus.schedule || "(미설정)"}</Descriptions.Item>
+            <Descriptions.Item label="타겟 URL">
+              {schedulerStatus.target_url || "(미설정)"}
+            </Descriptions.Item>
+            <Descriptions.Item label="상태">
+              {schedulerStatus.paused ? "일시정지" : "활성"}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+
         <Form layout="vertical" form={form} onFinish={handleSave}>
           <Form.Item name="enabled" label="스크래퍼 활성화" valuePropName="checked">
             <Switch />

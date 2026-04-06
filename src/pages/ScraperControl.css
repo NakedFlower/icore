@@ -2,3 +2,11 @@
   display: grid;
   gap: 16px;
 }
+
+.scheduler-status-alert {
+  margin-bottom: 12px;
+}
+
+.scheduler-status-grid {
+  margin-bottom: 16px;
+}
