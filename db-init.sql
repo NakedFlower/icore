@@ -55,13 +55,51 @@ CREATE TABLE IF NOT EXISTS scraper_configs (
   interval_minutes INT NOT NULL DEFAULT 60,
   dedup_mode VARCHAR(40) NOT NULL DEFAULT 'notice_id',
   dedup_retention_hours INT NOT NULL DEFAULT 48,
+  gsheet_id VARCHAR(120) NULL,
   receiver_emails TEXT NOT NULL,
   keywords TEXT NOT NULL,
   updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 5) 관리자 사용자
+-- 5) 스크래퍼 실행 이력
+CREATE TABLE IF NOT EXISTS scraper_runs (
+  id INT NOT NULL AUTO_INCREMENT,
+  run_id VARCHAR(64) NOT NULL,
+  source VARCHAR(20) NOT NULL DEFAULT 'cloud_run',
+  status VARCHAR(20) NOT NULL DEFAULT 'success',
+  keyword_count INT NOT NULL DEFAULT 0,
+  notice_count INT NOT NULL DEFAULT 0,
+  deduped_count INT NOT NULL DEFAULT 0,
+  email_sent_count INT NOT NULL DEFAULT 0,
+  sheet_written_count INT NOT NULL DEFAULT 0,
+  error_message TEXT NULL,
+  executed_at DATETIME(6) NOT NULL,
+  created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_scraper_runs_run_id (run_id),
+  KEY ix_scraper_runs_executed_at (executed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 6) 스크래퍼 중복 제거 키 저장
+CREATE TABLE IF NOT EXISTS scraper_notices (
+  id INT NOT NULL AUTO_INCREMENT,
+  dedup_key VARCHAR(190) NOT NULL,
+  notice_id VARCHAR(160) NOT NULL,
+  title VARCHAR(500) NOT NULL,
+  agency VARCHAR(240) NULL,
+  estimated_price VARCHAR(120) NULL,
+  deadline_at DATETIME(6) NULL,
+  notice_url VARCHAR(600) NULL,
+  first_seen_at DATETIME(6) NOT NULL,
+  last_seen_at DATETIME(6) NOT NULL,
+  last_run_id VARCHAR(64) NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_scraper_notices_dedup_key (dedup_key),
+  KEY ix_scraper_notices_last_seen_at (last_seen_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 7) 관리자 사용자
 CREATE TABLE IF NOT EXISTS users (
   id INT NOT NULL AUTO_INCREMENT,
   username VARCHAR(100) NOT NULL,
@@ -76,7 +114,7 @@ CREATE TABLE IF NOT EXISTS users (
   KEY ix_users_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 6) 기본 데이터
+-- 8) 기본 데이터
 INSERT INTO landing_templates (id, name, description, preview_style)
 SELECT 'clean-campaign', 'Clean Campaign', '교육/설명형 랜딩에 맞는 심플한 구성', 'left-copy-right-cta'
 WHERE NOT EXISTS (SELECT 1 FROM landing_templates WHERE id = 'clean-campaign');
@@ -96,10 +134,11 @@ INSERT INTO scraper_configs (
   interval_minutes,
   dedup_mode,
   dedup_retention_hours,
+  gsheet_id,
   receiver_emails,
   keywords
 )
-SELECT 1, 'daily', '09:00:00', 60, 'notice_id', 48, 'admin@icore.local', '클라우드,AI,교육'
+SELECT 1, 'daily', '09:00:00', 60, 'notice_id', 48, NULL, 'admin@icore.local', '클라우드,AI,교육'
 WHERE NOT EXISTS (SELECT 1 FROM scraper_configs);
 
 -- 7) 관리자 계정 생성 (원하는 비밀번호로 변경)
