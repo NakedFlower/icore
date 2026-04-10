@@ -7,20 +7,55 @@ import {
   Form,
   InputNumber,
   Radio,
+  Input,
   Select,
   Space,
   Switch,
+  Table,
   TimePicker,
+  Tooltip,
+  Tag,
   message,
 } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { scraperApi } from "../api/client";
 import "./ScraperControl.css";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const normalizeTags = (items = []) => {
+  const seen = new Set();
+  const result = [];
+  for (const item of items) {
+    const cleaned = String(item || "").trim();
+    if (!cleaned) {
+      continue;
+    }
+    const key = cleaned.toLowerCase();
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    result.push(cleaned);
+  }
+  return result;
+};
 
 function ScraperControl() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [schedulerStatus, setSchedulerStatus] = useState(null);
+  const [runHistory, setRunHistory] = useState([]);
+
+  const loadRuns = async () => {
+    try {
+      const response = await scraperApi.listRuns(20);
+      setRunHistory(response.data || []);
+    } catch {
+      setRunHistory([]);
+    }
+  };
 
   const loadConfig = async () => {
     setLoading(true);
@@ -34,10 +69,12 @@ function ScraperControl() {
         interval_minutes: config.interval_minutes,
         dedup_mode: config.dedup_mode,
         dedup_retention_hours: config.dedup_retention_hours,
-        receiver_emails: config.receiver_emails,
-        keywords: config.keywords,
+        gsheet_id: config.gsheet_id || "",
+        receiver_emails: normalizeTags(config.receiver_emails),
+        keywords: normalizeTags(config.keywords),
       });
       setSchedulerStatus(config.scheduler_status || null);
+      setRunHistory(config.recent_runs || []);
     } catch (error) {
       message.error(error?.response?.data?.detail || "설정 조회에 실패했습니다.");
     } finally {
@@ -47,10 +84,20 @@ function ScraperControl() {
 
   useEffect(() => {
     loadConfig();
+    loadRuns();
   }, []);
 
   const handleSave = async (values) => {
     try {
+      const receiverEmails = normalizeTags(values.receiver_emails);
+      const keywords = normalizeTags(values.keywords);
+
+      const invalidEmail = receiverEmails.find((email) => !EMAIL_REGEX.test(email));
+      if (invalidEmail) {
+        message.error(`유효하지 않은 이메일 형식: ${invalidEmail}`);
+        return;
+      }
+
       const payload = {
         enabled: values.enabled,
         schedule_mode: values.schedule_mode,
@@ -58,13 +105,17 @@ function ScraperControl() {
         interval_minutes: values.interval_minutes,
         dedup_mode: values.dedup_mode,
         dedup_retention_hours: values.dedup_retention_hours,
-        receiver_emails: values.receiver_emails,
-        keywords: values.keywords,
+        gsheet_id: (values.gsheet_id || "").trim() || null,
+        receiver_emails: receiverEmails,
+        keywords,
       };
       const response = await scraperApi.updateConfig(payload);
       message.success(response.data.message);
       if (response.data.scheduler) {
         setSchedulerStatus(response.data.scheduler);
+      }
+      if (response.data.config?.recent_runs) {
+        setRunHistory(response.data.config.recent_runs);
       }
     } catch (error) {
       message.error(error?.response?.data?.detail || "설정 저장에 실패했습니다.");
@@ -75,10 +126,45 @@ function ScraperControl() {
     try {
       const response = await scraperApi.trigger({ run_now: true, reason: "tool_ui_manual_run" });
       message.success(response.data.message);
+      loadRuns();
     } catch (error) {
       message.error(error?.response?.data?.detail || "즉시 실행 요청에 실패했습니다.");
     }
   };
+
+  const runColumns = [
+    {
+      title: "실행 시각",
+      dataIndex: "executed_at",
+      key: "executed_at",
+      render: (value) => dayjs(value).format("YYYY-MM-DD HH:mm:ss"),
+    },
+    {
+      title: "상태",
+      dataIndex: "status",
+      key: "status",
+      render: (value) => {
+        if (value === "success") {
+          return <Tag color="green">성공</Tag>;
+        }
+        if (value === "partial") {
+          return <Tag color="gold">부분성공</Tag>;
+        }
+        return <Tag color="red">실패</Tag>;
+      },
+    },
+    { title: "수집", dataIndex: "notice_count", key: "notice_count" },
+    { title: "중복제거", dataIndex: "deduped_count", key: "deduped_count" },
+    { title: "메일발송", dataIndex: "email_sent_count", key: "email_sent_count" },
+    { title: "시트기록", dataIndex: "sheet_written_count", key: "sheet_written_count" },
+    {
+      title: "메시지",
+      dataIndex: "error_message",
+      key: "error_message",
+      ellipsis: true,
+      render: (value) => value || "-",
+    },
+  ];
 
   return (
     <div className="scraper-control-page">
@@ -143,6 +229,22 @@ function ScraperControl() {
           >
             <InputNumber min={1} max={720} style={{ width: 240 }} />
           </Form.Item>
+          <Form.Item
+            name="gsheet_id"
+            label={
+              <Space size={6}>
+                Google Sheet ID
+                <Tooltip
+                  title="구글시트 URL에서 /d/ 와 /edit 사이 문자열이 Sheet ID입니다. 예: https://docs.google.com/spreadsheets/d/여기가ID/edit"
+                >
+                  <QuestionCircleOutlined />
+                </Tooltip>
+              </Space>
+            }
+            rules={[{ required: true, message: "Google Sheet ID를 입력하세요." }]}
+          >
+            <Input placeholder="예: 1AbCdEfGhIjKlMnOpQrStUvWxYz..." />
+          </Form.Item>
           <Form.Item name="receiver_emails" label="수신 메일 목록" rules={[{ required: true }]}>
             <Select mode="tags" tokenSeparators={[",", " "]} placeholder="mail1@company.com" />
           </Form.Item>
@@ -156,6 +258,18 @@ function ScraperControl() {
             <Button onClick={handleRunNow}>즉시 실행</Button>
           </Space>
         </Form>
+
+        <div className="scraper-runs-wrapper">
+          <div className="scraper-runs-title">최근 실행 이력</div>
+          <Table
+            size="small"
+            rowKey="run_id"
+            dataSource={runHistory}
+            columns={runColumns}
+            pagination={{ pageSize: 8 }}
+            scroll={{ x: 900 }}
+          />
+        </div>
       </Card>
     </div>
   );

@@ -72,4 +72,5 @@ export const scraperApi = {
   getConfig: () => api.get("/scraper/config"),
   updateConfig: (payload) => api.put("/scraper/config", payload),
   trigger: (payload) => api.post("/scraper/trigger", payload),
+  listRuns: (limit = 20) => api.get(`/scraper/runs?limit=${limit}`),
 };

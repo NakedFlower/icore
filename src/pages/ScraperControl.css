@@ -10,3 +10,13 @@
 .scheduler-status-grid {
   margin-bottom: 16px;
 }
+
+.scraper-runs-wrapper {
+  margin-top: 20px;
+}
+
+.scraper-runs-title {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
