@@ -206,6 +206,16 @@ function ScraperControl() {
             {(fields, { add, remove }, { errors }) => (
               <Form.Item label="알림 시간">
                 <Space direction="vertical" size={10} style={{ width: "100%" }}>
+                  {fields.length === 0 && (
+                    <Button
+                      type="default"
+                      className="notify-time-add-button"
+                      onClick={() => add(dayjs("2000-01-01T09:00:00"))}
+                      style={{ width: 44 }}
+                    >
+                      +
+                    </Button>
+                  )}
                   {fields.map((field, index) => (
                     <div key={field.key} className="notify-time-row">
                       <Form.Item
