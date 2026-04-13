@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
 import {
-  Alert,
   Button,
   Card,
-  Descriptions,
   Form,
-  InputNumber,
-  Radio,
   Input,
   Select,
   Space,
@@ -42,10 +38,27 @@ const normalizeTags = (items = []) => {
   return result;
 };
 
+const normalizeNotifyTimes = (times = []) => {
+  const seen = new Set();
+  const result = [];
+  for (const item of times) {
+    const value = String(item || "").trim();
+    if (!value) {
+      continue;
+    }
+    const key = value.slice(0, 8);
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    result.push(key);
+  }
+  return result;
+};
+
 function ScraperControl() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [schedulerStatus, setSchedulerStatus] = useState(null);
   const [runHistory, setRunHistory] = useState([]);
 
   const loadRuns = async () => {
@@ -62,18 +75,18 @@ function ScraperControl() {
     try {
       const response = await scraperApi.getConfig();
       const config = response.data;
+      const configuredTimes = normalizeNotifyTimes(
+        Array.isArray(config.notify_times) && config.notify_times.length > 0
+          ? config.notify_times
+          : [config.notify_time]
+      );
       form.setFieldsValue({
         enabled: config.enabled,
-        schedule_mode: config.schedule_mode,
-        notify_time: dayjs(`2000-01-01T${config.notify_time}`),
-        interval_minutes: config.interval_minutes,
-        dedup_mode: config.dedup_mode,
-        dedup_retention_hours: config.dedup_retention_hours,
+        notify_times: configuredTimes.map((time) => dayjs(`2000-01-01T${time}`)),
         gsheet_id: config.gsheet_id || "",
         receiver_emails: normalizeTags(config.receiver_emails),
         keywords: normalizeTags(config.keywords),
       });
-      setSchedulerStatus(config.scheduler_status || null);
       setRunHistory(config.recent_runs || []);
     } catch (error) {
       message.error(error?.response?.data?.detail || "설정 조회에 실패했습니다.");
@@ -100,20 +113,15 @@ function ScraperControl() {
 
       const payload = {
         enabled: values.enabled,
-        schedule_mode: values.schedule_mode,
-        notify_time: values.notify_time.format("HH:mm:ss"),
-        interval_minutes: values.interval_minutes,
-        dedup_mode: values.dedup_mode,
-        dedup_retention_hours: values.dedup_retention_hours,
+        notify_times: normalizeNotifyTimes(
+          (values.notify_times || []).map((item) => item?.format?.("HH:mm:ss") || "")
+        ),
         gsheet_id: (values.gsheet_id || "").trim() || null,
         receiver_emails: receiverEmails,
         keywords,
       };
       const response = await scraperApi.updateConfig(payload);
       message.success(response.data.message);
-      if (response.data.scheduler) {
-        setSchedulerStatus(response.data.scheduler);
-      }
       if (response.data.config?.recent_runs) {
         setRunHistory(response.data.config.recent_runs);
       }
@@ -171,70 +179,69 @@ function ScraperControl() {
       <Card
         title="G2B 나라장터 수집기 제어"
         extra={
-          <Button onClick={loadConfig} loading={loading}>
-            설정 불러오기
-          </Button>
+          <Space>
+            <Button type="primary" htmlType="submit" form="scraper-config-form" loading={loading}>
+              설정 저장
+            </Button>
+            <Button onClick={handleRunNow}>즉시 실행</Button>
+          </Space>
         }
       >
-        {schedulerStatus && (
-          <Alert
-            className="scheduler-status-alert"
-            type={schedulerStatus.connected ? "success" : "warning"}
-            message={schedulerStatus.connected ? "Cloud Scheduler 연결됨" : "Cloud Scheduler 연결 필요"}
-            description={schedulerStatus.message}
-            showIcon
-          />
-        )}
-        {schedulerStatus && (
-          <Descriptions size="small" bordered column={1} className="scheduler-status-grid">
-            <Descriptions.Item label="잡 이름">{schedulerStatus.job_name || "(미설정)"}</Descriptions.Item>
-            <Descriptions.Item label="스케줄">{schedulerStatus.schedule || "(미설정)"}</Descriptions.Item>
-            <Descriptions.Item label="타겟 URL">
-              {schedulerStatus.target_url || "(미설정)"}
-            </Descriptions.Item>
-            <Descriptions.Item label="상태">
-              {schedulerStatus.paused ? "일시정지" : "활성"}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-
-        <Form layout="vertical" form={form} onFinish={handleSave}>
+        <Form id="scraper-config-form" layout="vertical" form={form} onFinish={handleSave}>
           <Form.Item name="enabled" label="스크래퍼 활성화" valuePropName="checked">
             <Switch />
           </Form.Item>
-          <Form.Item name="schedule_mode" label="실행 방식" rules={[{ required: true }]}>
-            <Radio.Group>
-              <Radio.Button value="daily">매일 고정 시간</Radio.Button>
-              <Radio.Button value="interval">분 단위 반복</Radio.Button>
-            </Radio.Group>
-          </Form.Item>
-          <Form.Item name="notify_time" label="알림 시간" rules={[{ required: true }]}>
-            <TimePicker format="HH:mm:ss" />
-          </Form.Item>
-          <Form.Item name="interval_minutes" label="반복 간격(분)" rules={[{ required: true }]}>
-            <InputNumber min={5} max={1440} style={{ width: 240 }} />
-          </Form.Item>
-          <Form.Item name="dedup_mode" label="중복 판정 기준" rules={[{ required: true }]}>
-            <Select
-              options={[
-                { label: "공고 ID 기준", value: "notice_id" },
-                { label: "공고 ID + 제목 기준", value: "notice_id_and_title" },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item
-            name="dedup_retention_hours"
-            label="중복 보관 시간(시간)"
-            rules={[{ required: true }]}
+          <Form.List
+            name="notify_times"
+            rules={[
+              {
+                validator: async (_, value) => {
+                  if (!Array.isArray(value) || value.length === 0) {
+                    throw new Error("최소 1개의 알림 시간을 선택하세요.");
+                  }
+                },
+              },
+            ]}
           >
-            <InputNumber min={1} max={720} style={{ width: 240 }} />
-          </Form.Item>
+            {(fields, { add, remove }, { errors }) => (
+              <Form.Item label="알림 시간">
+                <Space direction="vertical" size={10} style={{ width: "100%" }}>
+                  {fields.map((field, index) => (
+                    <div key={field.key} className="notify-time-row">
+                      <Form.Item
+                        {...field}
+                        style={{ marginBottom: 0 }}
+                        rules={[{ required: true, message: "시간을 선택하세요." }]}
+                      >
+                        <TimePicker format="HH:mm:ss" />
+                      </Form.Item>
+                      {index === fields.length - 1 ? (
+                        <Button
+                          type="default"
+                          className="notify-time-add-button"
+                          onClick={() => add(dayjs("2000-01-01T09:00:00"))}
+                        >
+                          +
+                        </Button>
+                      ) : (
+                        <Button danger type="text" onClick={() => remove(field.name)}>
+                          삭제
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Form.ErrorList errors={errors} />
+                </Space>
+              </Form.Item>
+            )}
+          </Form.List>
           <Form.Item
             name="gsheet_id"
             label={
               <Space size={6}>
                 Google Sheet ID
                 <Tooltip
+                  overlayInnerStyle={{ maxWidth: 560, whiteSpace: "pre-line" }}
                   title={
                     <>
                       구글시트 URL에서 /d/ 와 /edit 사이 문자열이 Sheet ID입니다.
@@ -257,12 +264,6 @@ function ScraperControl() {
           <Form.Item name="keywords" label="키워드 목록" rules={[{ required: true }]}>
             <Select mode="tags" tokenSeparators={[",", " "]} placeholder="AI, 클라우드" />
           </Form.Item>
-          <Space>
-            <Button type="primary" htmlType="submit">
-              설정 저장
-            </Button>
-            <Button onClick={handleRunNow}>즉시 실행</Button>
-          </Space>
         </Form>
 
         <div className="scraper-runs-wrapper">
