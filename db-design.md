@@ -24,11 +24,7 @@
 ## 3) scraper_configs
 - `id` INT PK AUTO_INCREMENT
 - `enabled` BOOLEAN NOT NULL
-- `schedule_mode` VARCHAR(20) NOT NULL (`daily`/`interval`)
-- `notify_time` TIME NOT NULL
-- `interval_minutes` INT NOT NULL
-- `dedup_mode` VARCHAR(40) NOT NULL
-- `dedup_retention_hours` INT NOT NULL
+- `notify_times` TEXT NOT NULL (comma-separated HH:MM:SS)
 - `receiver_emails` TEXT NOT NULL (comma-separated)
 - `keywords` TEXT NOT NULL (comma-separated)
 - `updated_at` TIMESTAMP NOT NULL DEFAULT now()
@@ -54,6 +50,7 @@
 - `title` VARCHAR(500) NOT NULL
 - `agency` VARCHAR(240) NULL
 - `estimated_price` VARCHAR(120) NULL
+- `published_at` DATETIME(6) NULL
 - `deadline_at` DATETIME(6) NULL
 - `notice_url` VARCHAR(600) NULL
 - `first_seen_at` DATETIME(6) NOT NULL

@@ -24,7 +24,8 @@
   - 수집기 설정 조회
   - 응답에 `scheduler_status`, `recent_runs` 포함
 - `PUT /api/scraper/config`
-  - 알림 시간, 수신 메일, 키워드, 활성화 상태 저장
+  - 알림 시간들(`notify_times`), 수신 메일, 키워드, 활성화 상태 저장
+  - 실행 방식/중복 기준 선택 없이 매일 고정 시간 알림만 지원
   - 저장 직후 Cloud Scheduler 잡 생성/수정/일시정지 동기화
   - 응답에 `scheduler` 동기화 결과 포함
 - `POST /api/scraper/trigger`
@@ -38,7 +39,8 @@
   - 처리 순서: 수집 -> 중복 필터 -> Google Sheet 적재 -> Apps Script 웹훅 트리거
   - 인증 필요(Bearer)
 - `POST /api/scraper/internal/dedup`
-  - Cloud Run 워커 전용 중복 필터링 엔드포인트
+  - Cloud Run 워커 전용 신규 공고 필터링 엔드포인트
+  - 정책: 직전 알림 시점 이후 생성 + 기존 저장 공고 영구 중복 방지
   - 인증 필요(`X-Scraper-Internal-Token`)
 - `POST /api/scraper/runs`
   - Cloud Run 워커 실행 결과 저장 엔드포인트

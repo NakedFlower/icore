@@ -50,12 +50,8 @@ CREATE TABLE IF NOT EXISTS landing_pages (
 CREATE TABLE IF NOT EXISTS scraper_configs (
   id INT NOT NULL AUTO_INCREMENT,
   enabled TINYINT(1) NOT NULL DEFAULT 1,
-  schedule_mode VARCHAR(20) NOT NULL DEFAULT 'daily',
-  notify_time TIME NOT NULL,
-  interval_minutes INT NOT NULL DEFAULT 60,
-  dedup_mode VARCHAR(40) NOT NULL DEFAULT 'notice_id',
-  dedup_retention_hours INT NOT NULL DEFAULT 48,
-  gsheet_id VARCHAR(120) NULL,
+  notify_times TEXT NOT NULL,
+  gsheet_id VARCHAR(255) DEFAULT NULL,
   receiver_emails TEXT NOT NULL,
   keywords TEXT NOT NULL,
   updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
@@ -89,6 +85,7 @@ CREATE TABLE IF NOT EXISTS scraper_notices (
   title VARCHAR(500) NOT NULL,
   agency VARCHAR(240) NULL,
   estimated_price VARCHAR(120) NULL,
+  published_at DATETIME(6) NULL,
   deadline_at DATETIME(6) NULL,
   notice_url VARCHAR(600) NULL,
   first_seen_at DATETIME(6) NOT NULL,
@@ -114,7 +111,38 @@ CREATE TABLE IF NOT EXISTS users (
   KEY ix_users_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 8) 기본 데이터
+-- 8) 구버전 스키마 보정 (이미 생성된 테이블에 누락 컬럼 추가)
+ALTER TABLE scraper_configs
+  ADD COLUMN IF NOT EXISTS notify_times TEXT NOT NULL,
+  ADD COLUMN IF NOT EXISTS gsheet_id VARCHAR(255) DEFAULT NULL,
+  DROP COLUMN IF EXISTS schedule_mode,
+  DROP COLUMN IF EXISTS notify_time,
+  DROP COLUMN IF EXISTS interval_minutes,
+  DROP COLUMN IF EXISTS dedup_mode,
+  DROP COLUMN IF EXISTS dedup_retention_hours;
+
+ALTER TABLE scraper_runs
+  ADD COLUMN IF NOT EXISTS keyword_count INT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS deduped_count INT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS email_sent_count INT NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS sheet_written_count INT NOT NULL DEFAULT 0;
+
+ALTER TABLE scraper_notices
+  ADD COLUMN IF NOT EXISTS notice_id VARCHAR(160) NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS agency VARCHAR(240) NULL,
+  ADD COLUMN IF NOT EXISTS estimated_price VARCHAR(120) NULL,
+  ADD COLUMN IF NOT EXISTS published_at DATETIME(6) NULL,
+  ADD COLUMN IF NOT EXISTS deadline_at DATETIME(6) NULL,
+  ADD COLUMN IF NOT EXISTS notice_url VARCHAR(600) NULL,
+  ADD COLUMN IF NOT EXISTS first_seen_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  ADD COLUMN IF NOT EXISTS last_seen_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  ADD COLUMN IF NOT EXISTS last_run_id VARCHAR(64) NULL;
+
+UPDATE scraper_configs
+SET notify_times = '09:00:00'
+WHERE notify_times IS NULL OR notify_times = '';
+
+-- 9) 기본 데이터
 INSERT INTO landing_templates (id, name, description, preview_style)
 SELECT 'clean-campaign', 'Clean Campaign', '교육/설명형 랜딩에 맞는 심플한 구성', 'left-copy-right-cta'
 WHERE NOT EXISTS (SELECT 1 FROM landing_templates WHERE id = 'clean-campaign');
@@ -129,19 +157,15 @@ WHERE NOT EXISTS (SELECT 1 FROM landing_templates WHERE id = 'event-highlight');
 
 INSERT INTO scraper_configs (
   enabled,
-  schedule_mode,
-  notify_time,
-  interval_minutes,
-  dedup_mode,
-  dedup_retention_hours,
+  notify_times,
   gsheet_id,
   receiver_emails,
   keywords
 )
-SELECT 1, 'daily', '09:00:00', 60, 'notice_id', 48, NULL, 'admin@icore.local', '클라우드,AI,교육'
+SELECT 1, '09:00:00', NULL, 'admin@icore.local', '클라우드,AI,교육'
 WHERE NOT EXISTS (SELECT 1 FROM scraper_configs);
 
--- 7) 관리자 계정 생성 (원하는 비밀번호로 변경)
+-- 10) 관리자 계정 생성 (원하는 비밀번호로 변경)
 -- 앱 검증식: SHA2(CONCAT(password_salt, ':', plain_password), 256)
 SET @admin_username = 'admin';
 SET @admin_password = 'admin123!';
