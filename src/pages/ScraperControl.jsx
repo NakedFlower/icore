@@ -206,17 +206,7 @@ function ScraperControl() {
             {(fields, { add, remove }, { errors }) => (
               <Form.Item label="알림 시간">
                 <Space direction="vertical" size={10} style={{ width: "100%" }}>
-                  {fields.length === 0 && (
-                    <Button
-                      type="default"
-                      className="notify-time-add-button"
-                      onClick={() => add(dayjs("2000-01-01T09:00:00"))}
-                      style={{ width: 44 }}
-                    >
-                      +
-                    </Button>
-                  )}
-                  {fields.map((field, index) => (
+                  {fields.map((field) => (
                     <div key={field.key} className="notify-time-row">
                       <Form.Item
                         {...field}
@@ -225,21 +215,19 @@ function ScraperControl() {
                       >
                         <TimePicker format="HH:mm:ss" />
                       </Form.Item>
-                      {index === fields.length - 1 ? (
-                        <Button
-                          type="default"
-                          className="notify-time-add-button"
-                          onClick={() => add(dayjs("2000-01-01T09:00:00"))}
-                        >
-                          +
-                        </Button>
-                      ) : (
-                        <Button danger type="text" onClick={() => remove(field.name)}>
-                          삭제
-                        </Button>
-                      )}
+                      <Button danger type="text" onClick={() => remove(field.name)}>
+                        삭제
+                      </Button>
                     </div>
                   ))}
+                  <Button
+                    type="default"
+                    className="notify-time-add-button"
+                    onClick={() => add(dayjs("2000-01-01T09:00:00"))}
+                    style={{ width: 44 }}
+                  >
+                    +
+                  </Button>
                   <Form.ErrorList errors={errors} />
                 </Space>
               </Form.Item>
