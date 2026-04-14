@@ -247,8 +247,6 @@ function ScraperControl() {
                   title={
                     <>
                       구글시트 URL에서 /d/ 와 /edit 사이 문자열이 Sheet ID입니다.
-                      <br />
-                      예: https://docs.google.com/spreadsheets/d/여기가ID/edit
                     </>
                   }
                 >
