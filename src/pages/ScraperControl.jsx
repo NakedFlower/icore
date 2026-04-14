@@ -239,7 +239,11 @@ function ScraperControl() {
               <Space size={6}>
                 Google Sheet ID
                 <Tooltip
-                  overlayInnerStyle={{ maxWidth: 560, whiteSpace: "pre-line" }}
+                  overlayInnerStyle={{
+                    whiteSpace: "nowrap",
+                    width: "max-content",
+                    maxWidth: "90vw",
+                  }}
                   title={
                     <>
                       구글시트 URL에서 /d/ 와 /edit 사이 문자열이 Sheet ID입니다.
