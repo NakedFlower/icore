@@ -83,7 +83,7 @@ function ScraperControl() {
       form.setFieldsValue({
         enabled: config.enabled,
         notify_times: configuredTimes.map((time) => dayjs(`2000-01-01T${time}`)),
-        gsheet_id: config.gsheet_id || "",
+        gsheet_ids: config.gsheet_ids || [],
         receiver_emails: normalizeTags(config.receiver_emails),
         keywords: normalizeTags(config.keywords),
       });
@@ -116,7 +116,7 @@ function ScraperControl() {
         notify_times: normalizeNotifyTimes(
           (values.notify_times || []).map((item) => item?.format?.("HH:mm:ss") || "")
         ),
-        gsheet_id: (values.gsheet_id || "").trim() || null,
+        gsheet_ids: normalizeTags(values.gsheet_ids),
         receiver_emails: receiverEmails,
         keywords,
       };
@@ -234,10 +234,10 @@ function ScraperControl() {
             )}
           </Form.List>
           <Form.Item
-            name="gsheet_id"
+            name="gsheet_ids"
             label={
               <Space size={6}>
-                Google Sheet ID
+                Google Sheet ID 목록
                 <Tooltip
                   overlayInnerStyle={{
                     whiteSpace: "nowrap",
@@ -254,15 +254,14 @@ function ScraperControl() {
                 </Tooltip>
               </Space>
             }
-            rules={[{ required: true, message: "Google Sheet ID를 입력하세요." }]}
           >
-            <Input placeholder="예: 1AbCdEfGhIjKlMnOpQrStUvWxYz..." />
+            <Select mode="tags" tokenSeparators={[","]} placeholder="예: 1AbCdEfGhIjKlMnOpQrStUvWxYz..." />
           </Form.Item>
           <Form.Item name="receiver_emails" label="수신 메일 목록" rules={[{ required: true }]}>
-            <Select mode="tags" tokenSeparators={[",", " "]} placeholder="mail1@company.com" />
+            <Select mode="tags" tokenSeparators={[","]} placeholder="mail1@company.com" />
           </Form.Item>
           <Form.Item name="keywords" label="키워드 목록" rules={[{ required: true }]}>
-            <Select mode="tags" tokenSeparators={[",", " "]} placeholder="AI, 클라우드" />
+            <Select mode="tags" tokenSeparators={[","]} placeholder="AI 용역, 클라우드" />
           </Form.Item>
         </Form>
 
