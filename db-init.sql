@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS scraper_configs (
   interval_minutes      INT          NOT NULL DEFAULT 60,
   dedup_mode            VARCHAR(40)  NOT NULL DEFAULT 'notice_id',
   dedup_retention_hours INT          NOT NULL DEFAULT 48,
-  gsheet_id             VARCHAR(255) DEFAULT NULL,
+  gsheet_ids            TEXT         NOT NULL DEFAULT '',
   receiver_emails       TEXT         NOT NULL,
   keywords              TEXT         NOT NULL,
   updated_at            DATETIME(6)  NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
@@ -118,7 +118,7 @@ ALTER TABLE scraper_configs
   ADD COLUMN IF NOT EXISTS interval_minutes      INT         NOT NULL DEFAULT 60,
   ADD COLUMN IF NOT EXISTS dedup_mode            VARCHAR(40) NOT NULL DEFAULT 'notice_id',
   ADD COLUMN IF NOT EXISTS dedup_retention_hours INT         NOT NULL DEFAULT 48,
-  ADD COLUMN IF NOT EXISTS gsheet_id             VARCHAR(255) DEFAULT NULL;
+  ADD COLUMN IF NOT EXISTS gsheet_ids             TEXT NOT NULL DEFAULT '';
  
 ALTER TABLE scraper_runs
   ADD COLUMN IF NOT EXISTS keyword_count       INT  NOT NULL DEFAULT 0,
@@ -161,11 +161,11 @@ INSERT INTO scraper_configs (
   interval_minutes,
   dedup_mode,
   dedup_retention_hours,
-  gsheet_id,
+  gsheet_ids,
   receiver_emails,
   keywords
 )
-SELECT 1, 'daily', '09:00:00', 60, 'notice_id', 48, NULL, 'admin@icore.local', '클라우드,AI,교육'
+SELECT 1, 'daily', '09:00:00', 60, 'notice_id', 48, '', 'admin@icore.local', '클라우드,AI,교육'
 WHERE NOT EXISTS (SELECT 1 FROM scraper_configs);
  
 -- 10) 관리자 계정 생성 (원하는 비밀번호로 변경)
