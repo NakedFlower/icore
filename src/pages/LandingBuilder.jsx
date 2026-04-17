@@ -147,6 +147,9 @@ function LandingBuilder() {
       features: [],
       curriculum: [],
       target_audience: [],
+      stats: [],
+      infos: [],
+      faqs: [],
       cta_text_color: "#ffffff",
       cta_bg_color: "#2563eb",
       background_color: "#f8fafc",
@@ -193,6 +196,9 @@ function LandingBuilder() {
         features: detail.features || [],
         curriculum: detail.curriculum || [],
         target_audience: detail.target_audience || [],
+        stats: detail.stats || [],
+        infos: detail.infos || [],
+        faqs: detail.faqs || [],
         cta_text_color: detail.cta_text_color || "#ffffff",
         cta_bg_color: detail.cta_bg_color || "#2563eb",
         background_color: detail.background_color || "#f8fafc",
@@ -267,6 +273,9 @@ function LandingBuilder() {
           features: values.features || [],
           curriculum: values.curriculum || [],
           target_audience: values.target_audience || [],
+          stats: values.stats || [],
+          infos: values.infos || [],
+          faqs: values.faqs || [],
           primary_color: values.cta_bg_color,
           secondary_color: values.title_color,
           background_color: values.background_color,
@@ -533,6 +542,25 @@ function LandingBuilder() {
                                   >
                                     <Input.TextArea placeholder="특징에 대한 상세한 설명을 적어주세요." rows={2} />
                                   </Form.Item>
+                                  <Form.Item label="특징 이미지 (선택)">
+                                    <Upload
+                                      maxCount={1}
+                                      accept="image/*"
+                                      showUploadList={false}
+                                      beforeUpload={async (file) => {
+                                        const dataUrl = await toBase64(file);
+                                        const current = form.getFieldValue('features') || [];
+                                        current[name] = { ...current[name], image_base64: dataUrl };
+                                        form.setFieldsValue({ features: [...current] });
+                                        return false;
+                                      }}
+                                    >
+                                      <Button size="small">📷 이미지 선택</Button>
+                                    </Upload>
+                                    {values.features?.[name]?.image_base64 && (
+                                      <img src={values.features[name].image_base64} alt="특징 미리보기" style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 6, marginTop: 6, border: '1px solid #e2e8f0' }} />
+                                    )}
+                                  </Form.Item>
                                   <Button style={{ position: 'absolute', top: 16, right: 16 }} onClick={() => remove(name)} danger size="small">삭제</Button>
                                 </div>
                               ))}
@@ -561,7 +589,7 @@ function LandingBuilder() {
                                         label="진행 단계"
                                         rules={[{ required: true, message: '단계를 입력하세요' }]}
                                       >
-                                        <Input placeholder="예: 1주차" />
+                                        <Input placeholder="예: STEP 1" />
                                       </Form.Item>
                                     </Col>
                                     <Col span={16}>
@@ -578,10 +606,29 @@ function LandingBuilder() {
                                   <Form.Item
                                     {...restField}
                                     name={[name, 'description']}
-                                    label="상세 내용"
+                                    label="상세 내용 (줄바꿈으로 항목 구분)"
                                     rules={[{ required: true, message: '상세 내용을 입력하세요' }]}
                                   >
-                                    <Input.TextArea placeholder="해당 단계에서 배우는 구체적인 내용을 작성하세요." rows={2} />
+                                    <Input.TextArea placeholder="항목별로 줄바꿈해주세요.&#10;예: HTML, CSS 핵심 원리 마스터&#10;객체지향 프로그래밍 입문" rows={3} />
+                                  </Form.Item>
+                                  <Form.Item label="커리큘럼 이미지 (선택)">
+                                    <Upload
+                                      maxCount={1}
+                                      accept="image/*"
+                                      showUploadList={false}
+                                      beforeUpload={async (file) => {
+                                        const dataUrl = await toBase64(file);
+                                        const current = form.getFieldValue('curriculum') || [];
+                                        current[name] = { ...current[name], image_base64: dataUrl };
+                                        form.setFieldsValue({ curriculum: [...current] });
+                                        return false;
+                                      }}
+                                    >
+                                      <Button size="small">📷 이미지 선택</Button>
+                                    </Upload>
+                                    {values.curriculum?.[name]?.image_base64 && (
+                                      <img src={values.curriculum[name].image_base64} alt="커리큘럼 미리보기" style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 6, marginTop: 6, border: '1px solid #e2e8f0' }} />
+                                    )}
                                   </Form.Item>
                                   <Button style={{ position: 'absolute', top: 16, right: 16 }} onClick={() => remove(name)} danger size="small">삭제</Button>
                                 </div>
@@ -589,6 +636,110 @@ function LandingBuilder() {
                               <Form.Item>
                                 <Button type="dashed" onClick={() => add()} block>
                                   + 커리큘럼 추가
+                                </Button>
+                              </Form.Item>
+                            </>
+                          )}
+                        </Form.List>
+
+                        <Divider style={{ margin: '16px 0' }} />
+
+                        <Typography.Title level={5}>📊 통계 패널 (Stats)</Typography.Title>
+                        <Form.List name="stats">
+                          {(fields, { add, remove }) => (
+                            <>
+                              {fields.map(({ key, name, ...restField }) => (
+                                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'value']}
+                                    rules={[{ required: true, message: '수치를 입력하세요' }]}
+                                  >
+                                    <Input placeholder="예: 92%" style={{ width: 120 }} />
+                                  </Form.Item>
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'title']}
+                                    rules={[{ required: true, message: '항목명을 입력하세요' }]}
+                                  >
+                                    <Input placeholder="예: 취업률" style={{ width: 200 }} />
+                                  </Form.Item>
+                                  <Button onClick={() => remove(name)} danger size="small">삭제</Button>
+                                </Space>
+                              ))}
+                              <Form.Item>
+                                <Button type="dashed" onClick={() => add()} block>
+                                  + 통계 항목 추가
+                                </Button>
+                              </Form.Item>
+                            </>
+                          )}
+                        </Form.List>
+
+                        <Divider style={{ margin: '16px 0' }} />
+
+                        <Typography.Title level={5}>📋 모집 정보 (Info Cards)</Typography.Title>
+                        <Form.List name="infos">
+                          {(fields, { add, remove }) => (
+                            <>
+                              {fields.map(({ key, name, ...restField }) => (
+                                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'label']}
+                                    rules={[{ required: true, message: '라벨을 입력하세요' }]}
+                                  >
+                                    <Input placeholder="예: 모집 인원" style={{ width: 140 }} />
+                                  </Form.Item>
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'val']}
+                                    rules={[{ required: true, message: '값을 입력하세요' }]}
+                                  >
+                                    <Input placeholder="예: 40명 내외 선발" style={{ width: 220 }} />
+                                  </Form.Item>
+                                  <Button onClick={() => remove(name)} danger size="small">삭제</Button>
+                                </Space>
+                              ))}
+                              <Form.Item>
+                                <Button type="dashed" onClick={() => add()} block>
+                                  + 모집 정보 추가
+                                </Button>
+                              </Form.Item>
+                            </>
+                          )}
+                        </Form.List>
+
+                        <Divider style={{ margin: '16px 0' }} />
+
+                        <Typography.Title level={5}>❓ 자주 묻는 질문 (FAQ)</Typography.Title>
+                        <Form.List name="faqs">
+                          {(fields, { add, remove }) => (
+                            <>
+                              {fields.map(({ key, name, ...restField }) => (
+                                <div key={key} style={{ background: '#f8fafc', padding: 16, marginBottom: 16, borderRadius: 8, position: 'relative', border: '1px solid #e2e8f0' }}>
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'q']}
+                                    label="질문"
+                                    rules={[{ required: true, message: '질문을 입력하세요' }]}
+                                  >
+                                    <Input placeholder="예: 비전공자도 따라갈 수 있나요?" />
+                                  </Form.Item>
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'a']}
+                                    label="답변"
+                                    rules={[{ required: true, message: '답변을 입력하세요' }]}
+                                  >
+                                    <Input.TextArea placeholder="자세한 답변을 작성해주세요." rows={3} />
+                                  </Form.Item>
+                                  <Button style={{ position: 'absolute', top: 16, right: 16 }} onClick={() => remove(name)} danger size="small">삭제</Button>
+                                </div>
+                              ))}
+                              <Form.Item>
+                                <Button type="dashed" onClick={() => add()} block>
+                                  + FAQ 추가
                                 </Button>
                               </Form.Item>
                             </>
@@ -681,6 +832,48 @@ function LandingBuilder() {
                                       <p>{c?.description || '내용'}</p>
                                     </div>
                                   </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(values.stats && values.stats.length > 0) && (
+                            <div className="preview-stats-grid">
+                              <h3>📊 통계</h3>
+                              <div className="grid">
+                                {values.stats.map((s, idx) => (
+                                  <div key={idx} className="stat-card">
+                                    <strong>{s?.value || '-'}</strong>
+                                    <span>{s?.title || '항목'}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(values.infos && values.infos.length > 0) && (
+                            <div className="preview-infos">
+                              <h3>📋 모집 정보</h3>
+                              <div className="info-list">
+                                {values.infos.map((info, idx) => (
+                                  <div key={idx} className="info-card">
+                                    <span className="label">{info?.label || '라벨'}</span>
+                                    <span className="val">{info?.val || '값'}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(values.faqs && values.faqs.length > 0) && (
+                            <div className="preview-faqs">
+                              <h3>❓ FAQ</h3>
+                              <div className="faq-list">
+                                {values.faqs.map((faq, idx) => (
+                                  <details key={idx} className="faq-item">
+                                    <summary>{faq?.q || '질문'}</summary>
+                                    <div className="ans">{faq?.a || '답변'}</div>
+                                  </details>
                                 ))}
                               </div>
                             </div>
