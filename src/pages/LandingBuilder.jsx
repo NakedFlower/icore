@@ -649,7 +649,7 @@ function LandingBuilder() {
                               <h3>추천 대상</h3>
                               <ul>
                                 {values.target_audience.map((t, idx) => (
-                                  <li key={idx}><span className="chk">✓</span> {t.description || '대상'}</li>
+                                  <li key={idx}><span className="chk">✓</span> {t?.description || '대상'}</li>
                                 ))}
                               </ul>
                             </div>
@@ -661,8 +661,8 @@ function LandingBuilder() {
                               <div className="grid">
                                 {values.features.map((f, idx) => (
                                   <article key={idx}>
-                                    <h4>{f.title || '특징'}</h4>
-                                    <p>{f.description || '설명'}</p>
+                                    <h4>{f?.title || '특징'}</h4>
+                                    <p>{f?.description || '설명'}</p>
                                   </article>
                                 ))}
                               </div>
@@ -677,8 +677,8 @@ function LandingBuilder() {
                                   <div key={idx} className="step">
                                     <div className="marker" />
                                     <div className="content">
-                                      <h4>{c.step ? `${c.step}: ` : ''}{c.title || '목표'}</h4>
-                                      <p>{c.description || '내용'}</p>
+                                      <h4>{c?.step ? `${c.step}: ` : ''}{c?.title || '목표'}</h4>
+                                      <p>{c?.description || '내용'}</p>
                                     </div>
                                   </div>
                                 ))}
