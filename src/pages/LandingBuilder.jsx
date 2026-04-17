@@ -14,6 +14,7 @@ import {
   Select,
   Space,
   Tag,
+  Tooltip,
   Typography,
   Upload,
   message,
@@ -521,8 +522,15 @@ function LandingBuilder() {
                         <Divider style={{ margin: '16px 0' }} />
 
                         <Typography.Title level={5}>과정 특징 설정</Typography.Title>
+                        <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 12, fontSize: 13 }}>
+                          💡 3개, 5개, 또는 6개 단위로 구성하면 레이아웃이 가장 보기 좋습니다.
+                        </Typography.Text>
                         <Form.List name="features">
-                          {(fields, { add, remove }) => (
+                          {(fields, { add, remove }) => {
+                            const featCount = fields.length;
+                            const canAdd = featCount < 6;
+                            const isGoodCount = [0, 3, 5, 6].includes(featCount);
+                            return (
                             <>
                               {fields.map(({ key, name, ...restField }) => (
                                 <div key={key} style={{ background: '#f8fafc', padding: 16, marginBottom: 16, borderRadius: 8, position: 'relative', border: '1px solid #e2e8f0' }}>
@@ -564,13 +572,17 @@ function LandingBuilder() {
                                   <Button style={{ position: 'absolute', top: 16, right: 16 }} onClick={() => remove(name)} danger size="small">삭제</Button>
                                 </div>
                               ))}
+                              {!isGoodCount && featCount > 0 && (
+                                <Alert message={`현재 ${featCount}개 — 3, 5, 6개일 때 레이아웃이 최적화됩니다.`} type="warning" showIcon style={{ marginBottom: 12 }} />
+                              )}
                               <Form.Item>
-                                <Button type="dashed" onClick={() => add()} block>
-                                  + 과정 특징 추가
+                                <Button type="dashed" onClick={() => add()} block disabled={!canAdd}>
+                                  {canAdd ? '+ 과정 특징 추가' : '최대 6개까지 추가 가능합니다'}
                                 </Button>
                               </Form.Item>
                             </>
-                          )}
+                          );}
+                          }
                         </Form.List>
 
                         <Divider style={{ margin: '16px 0' }} />
@@ -644,7 +656,12 @@ function LandingBuilder() {
 
                         <Divider style={{ margin: '16px 0' }} />
 
-                        <Typography.Title level={5}>📊 통계 패널 (Stats)</Typography.Title>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                          <Typography.Title level={5} style={{ margin: 0 }}>📊 통계 패널 (Stats)</Typography.Title>
+                          <Tooltip title="숫자로 시작해야 카운트업 애니메이션이 적용됩니다. 예: 92%, 75/100, 1200+, 4.8점">
+                            <span style={{ cursor: 'help', background: '#e2e8f0', borderRadius: '50%', width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#475569' }}>?</span>
+                          </Tooltip>
+                        </div>
                         <Form.List name="stats">
                           {(fields, { add, remove }) => (
                             <>
