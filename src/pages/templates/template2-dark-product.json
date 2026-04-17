@@ -12,5 +12,17 @@
   "body_color": "#cbd5e1",
   "cta_text_color": "#ffffff",
   "cta_bg_color": "#0891b2",
-  "background_color": "#030712"
+  "background_color": "#030712",
+  "features": [
+    { "title": "Secure Architecture", "description": "Design secure and scalable cloud native systems." },
+    { "title": "High Performance", "description": "Optimize operations for peak scalability." }
+  ],
+  "curriculum": [
+    { "step": "Stage 1", "title": "Architecture Setup", "description": "Deploying initial infrastructure securely." },
+    { "step": "Stage 2", "title": "Scaling out", "description": "Auto-scaling rules and container orchestration." }
+  ],
+  "target_audience": [
+    { "description": "DevOps Engineers" },
+    { "description": "System Administrators" }
+  ]
 }

@@ -12,5 +12,17 @@
   "body_color": "#374151",
   "cta_text_color": "#ffffff",
   "cta_bg_color": "#111827",
-  "background_color": "#fff7ed"
+  "background_color": "#fff7ed",
+  "features": [
+    { "title": "Weekly Checkpoints", "description": "Ensure steady progress with scheduled reviews." },
+    { "title": "Industry Mentors", "description": "1:1 coaching with tech leads." }
+  ],
+  "curriculum": [
+    { "step": "Session 1", "title": "Kickoff", "description": "Meet the team and configure your environment." },
+    { "step": "Session 2", "title": "First Project", "description": "Build a simple app collaboratively." }
+  ],
+  "target_audience": [
+    { "description": "Future AI Developers" },
+    { "description": "Career Transitioners" }
+  ]
 }

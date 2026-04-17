@@ -144,6 +144,9 @@ function LandingBuilder() {
       title_color: "#0f172a",
       subtitle_color: "#2563eb",
       body_color: "#334155",
+      features: [],
+      curriculum: [],
+      target_audience: [],
       cta_text_color: "#ffffff",
       cta_bg_color: "#2563eb",
       background_color: "#f8fafc",
@@ -187,6 +190,9 @@ function LandingBuilder() {
         title_color: detail.title_color || "#0f172a",
         subtitle_color: detail.subtitle_color || "#2563eb",
         body_color: detail.body_color || "#334155",
+        features: detail.features || [],
+        curriculum: detail.curriculum || [],
+        target_audience: detail.target_audience || [],
         cta_text_color: detail.cta_text_color || "#ffffff",
         cta_bg_color: detail.cta_bg_color || "#2563eb",
         background_color: detail.background_color || "#f8fafc",
@@ -258,6 +264,9 @@ function LandingBuilder() {
           hero_image_file_name: uploadedImageFileName || null,
           hero_image_mime_type: uploadedImageMimeType || null,
           hero_image_base64: uploadedImageBase64 || null,
+          features: values.features || [],
+          curriculum: values.curriculum || [],
+          target_audience: values.target_audience || [],
           primary_color: values.cta_bg_color,
           secondary_color: values.title_color,
           background_color: values.background_color,
@@ -474,40 +483,118 @@ function LandingBuilder() {
 
                       <Divider className="landing-divider" />
 
-                      <div className="landing-design-tools">
-                        <Typography.Text strong>디자인 프리셋</Typography.Text>
-                        <div className="landing-preset-list">
-                          {COLOR_PRESETS.map((preset) => (
-                            <button
-                              key={preset.key}
-                              type="button"
-                              className="landing-preset-chip"
-                              onClick={() => applyColorPreset(preset.key)}
-                            >
-                              <span style={{ background: preset.cta_bg_color }} />
-                              {preset.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                      <div className="landing-dynamic-lists">
+                        <Typography.Title level={5}>추천 대상 설정</Typography.Title>
+                        <Form.List name="target_audience">
+                          {(fields, { add, remove }) => (
+                            <>
+                              {fields.map(({ key, name, ...restField }) => (
+                                <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'description']}
+                                    rules={[{ required: true, message: '대상을 입력하세요' }]}
+                                  >
+                                    <Input placeholder="예: 비전공자 기초 코딩 입문자" style={{ width: 300 }} />
+                                  </Form.Item>
+                                  <Button onClick={() => remove(name)} danger size="small">삭제</Button>
+                                </Space>
+                              ))}
+                              <Form.Item>
+                                <Button type="dashed" onClick={() => add()} block>
+                                  + 추천 대상 추가
+                                </Button>
+                              </Form.Item>
+                            </>
+                          )}
+                        </Form.List>
 
-                      <Row gutter={16}>
-                        <Col xs={24} lg={8}>
-                          <Form.Item name="cta_text_color" label="버튼 글자 색상" rules={[{ required: true }]}>
-                            <Input type="color" className="landing-builder-color" />
-                          </Form.Item>
-                        </Col>
-                        <Col xs={24} lg={8}>
-                          <Form.Item name="cta_bg_color" label="버튼 배경 색상" rules={[{ required: true }]}>
-                            <Input type="color" className="landing-builder-color" />
-                          </Form.Item>
-                        </Col>
-                        <Col xs={24} lg={8}>
-                          <Form.Item name="background_color" label="화면 배경 색상" rules={[{ required: true }]}>
-                            <Input type="color" className="landing-builder-color" />
-                          </Form.Item>
-                        </Col>
-                      </Row>
+                        <Divider style={{ margin: '16px 0' }} />
+
+                        <Typography.Title level={5}>과정 특징 설정</Typography.Title>
+                        <Form.List name="features">
+                          {(fields, { add, remove }) => (
+                            <>
+                              {fields.map(({ key, name, ...restField }) => (
+                                <div key={key} style={{ background: '#f8fafc', padding: 16, marginBottom: 16, borderRadius: 8, position: 'relative', border: '1px solid #e2e8f0' }}>
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'title']}
+                                    label="특징 요약"
+                                    rules={[{ required: true, message: '특징 제목을 입력하세요' }]}
+                                  >
+                                    <Input placeholder="예: 현직자 밀착 코칭" />
+                                  </Form.Item>
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'description']}
+                                    label="상세 설명"
+                                    rules={[{ required: true, message: '상세 설명을 입력하세요' }]}
+                                  >
+                                    <Input.TextArea placeholder="특징에 대한 상세한 설명을 적어주세요." rows={2} />
+                                  </Form.Item>
+                                  <Button style={{ position: 'absolute', top: 16, right: 16 }} onClick={() => remove(name)} danger size="small">삭제</Button>
+                                </div>
+                              ))}
+                              <Form.Item>
+                                <Button type="dashed" onClick={() => add()} block>
+                                  + 과정 특징 추가
+                                </Button>
+                              </Form.Item>
+                            </>
+                          )}
+                        </Form.List>
+
+                        <Divider style={{ margin: '16px 0' }} />
+
+                        <Typography.Title level={5}>커리큘럼 설정</Typography.Title>
+                        <Form.List name="curriculum">
+                          {(fields, { add, remove }) => (
+                            <>
+                              {fields.map(({ key, name, ...restField }) => (
+                                <div key={key} style={{ background: '#f8fafc', padding: 16, marginBottom: 16, borderRadius: 8, position: 'relative', border: '1px solid #e2e8f0' }}>
+                                  <Row gutter={8}>
+                                    <Col span={8}>
+                                      <Form.Item
+                                        {...restField}
+                                        name={[name, 'step']}
+                                        label="진행 단계"
+                                        rules={[{ required: true, message: '단계를 입력하세요' }]}
+                                      >
+                                        <Input placeholder="예: 1주차" />
+                                      </Form.Item>
+                                    </Col>
+                                    <Col span={16}>
+                                      <Form.Item
+                                        {...restField}
+                                        name={[name, 'title']}
+                                        label="단계별 목표"
+                                        rules={[{ required: true, message: '목표를 입력하세요' }]}
+                                      >
+                                        <Input placeholder="예: 파이썬 기초 마스터" />
+                                      </Form.Item>
+                                    </Col>
+                                  </Row>
+                                  <Form.Item
+                                    {...restField}
+                                    name={[name, 'description']}
+                                    label="상세 내용"
+                                    rules={[{ required: true, message: '상세 내용을 입력하세요' }]}
+                                  >
+                                    <Input.TextArea placeholder="해당 단계에서 배우는 구체적인 내용을 작성하세요." rows={2} />
+                                  </Form.Item>
+                                  <Button style={{ position: 'absolute', top: 16, right: 16 }} onClick={() => remove(name)} danger size="small">삭제</Button>
+                                </div>
+                              ))}
+                              <Form.Item>
+                                <Button type="dashed" onClick={() => add()} block>
+                                  + 커리큘럼 추가
+                                </Button>
+                              </Form.Item>
+                            </>
+                          )}
+                        </Form.List>
+                      </div>
                     </div>
                   </Col>
 
@@ -556,10 +643,48 @@ function LandingBuilder() {
                           <div className="landing-visual-placeholder">대표 이미지를 넣으면 최종 랜딩처럼 보여줍니다.</div>
                         )}
 
-                        <div className="preview-feature-grid">
-                          <article>현업 중심 커리큘럼</article>
-                          <article>전문가 피드백</article>
-                          <article>프로젝트 포트폴리오</article>
+                        <div className="preview-rich-content">
+                          {(values.target_audience && values.target_audience.length > 0) && (
+                            <div className="preview-target-audience">
+                              <h3>추천 대상</h3>
+                              <ul>
+                                {values.target_audience.map((t, idx) => (
+                                  <li key={idx}><span className="chk">✓</span> {t.description || '대상'}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {(values.features && values.features.length > 0) && (
+                            <div className="preview-features-grid">
+                              <h3>과정 특징</h3>
+                              <div className="grid">
+                                {values.features.map((f, idx) => (
+                                  <article key={idx}>
+                                    <h4>{f.title || '특징'}</h4>
+                                    <p>{f.description || '설명'}</p>
+                                  </article>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {(values.curriculum && values.curriculum.length > 0) && (
+                            <div className="preview-curriculum">
+                              <h3>커리큘럼</h3>
+                              <div className="timeline">
+                                {values.curriculum.map((c, idx) => (
+                                  <div key={idx} className="step">
+                                    <div className="marker" />
+                                    <div className="content">
+                                      <h4>{c.step ? `${c.step}: ` : ''}{c.title || '목표'}</h4>
+                                      <p>{c.description || '내용'}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         <Button

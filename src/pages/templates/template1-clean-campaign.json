@@ -12,5 +12,17 @@
   "body_color": "#334155",
   "cta_text_color": "#ffffff",
   "cta_bg_color": "#0ea5e9",
-  "background_color": "#f8fafc"
+  "background_color": "#f8fafc",
+  "features": [
+    { "title": "Hands-on Projects", "description": "Learn by building real-world applications from day one." },
+    { "title": "Expert Mentorship", "description": "Get direct feedback and guidance from top industry professionals." }
+  ],
+  "curriculum": [
+    { "step": "Week 1", "title": "Cloud Fundamentals", "description": "Master AWS, GCP basics." },
+    { "step": "Week 2", "title": "Generative AI", "description": "Integrating LLMs into production." }
+  ],
+  "target_audience": [
+    { "description": "Software engineers wanting to upskill" },
+    { "description": "Project managers looking to understand GenAI" }
+  ]
 }
