@@ -336,7 +336,6 @@ function LandingBuilder() {
                         </div>
                         <h4>{template.name}</h4>
                         <p>{template.description}</p>
-                        <small>선택 시 본문/색상 초기값 자동 로드</small>
                       </div>
                       <Typography.Title level={5} className="template-option-title">
                         {template.name}
