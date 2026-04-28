@@ -1,4 +1,10 @@
--- iCore MySQL bootstrap script (MySQL 8+)
+-- =============================================================================
+-- iCore MySQL one-shot script: CREATE DATABASE, tables, missing-column ALTERs, seed data.
+--
+-- Usage: paste the entire file into mysql / Cloud SQL / Workbench and run once (top to bottom).
+-- Requires MySQL 8.0.29+ (ADD COLUMN IF NOT EXISTS).
+-- =============================================================================
+
 -- 1) DB 생성
 CREATE DATABASE IF NOT EXISTS icore CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE icore;
@@ -33,7 +39,6 @@ CREATE TABLE IF NOT EXISTS landing_pages (
   body             TEXT         NOT NULL,
   cta_text         VARCHAR(60)  NOT NULL,
   cta_url          VARCHAR(240) NOT NULL,
-  hero_image_url   VARCHAR(500) NULL,
   primary_color    VARCHAR(7)   NOT NULL,
   secondary_color  VARCHAR(7)   NOT NULL,
   background_color VARCHAR(7)   NOT NULL,
@@ -137,19 +142,17 @@ ALTER TABLE scraper_notices
   ADD COLUMN IF NOT EXISTS last_seen_at    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   ADD COLUMN IF NOT EXISTS last_run_id     VARCHAR(64)  NULL;
  
-UPDATE scraper_configs
-SET notify_times = '09:00:00'
-WHERE notify_times IS NULL OR notify_times = '';
- 
--- 9) 기본 데이터
+ALTER TABLE landing_pages
+  DROP COLUMN IF EXISTS hero_image_url;
+
 INSERT INTO landing_templates (id, name, description, preview_style)
 SELECT 'clean-campaign', 'Clean Campaign', '교육/설명형 랜딩에 맞는 심플한 구성', 'left-copy-right-cta'
 WHERE NOT EXISTS (SELECT 1 FROM landing_templates WHERE id = 'clean-campaign');
- 
+
 INSERT INTO landing_templates (id, name, description, preview_style)
 SELECT 'dark-product', 'Dark Product', '기술/솔루션 소개에 맞는 다크 톤 구성', 'hero-centered-strong-cta'
 WHERE NOT EXISTS (SELECT 1 FROM landing_templates WHERE id = 'dark-product');
- 
+
 INSERT INTO landing_templates (id, name, description, preview_style)
 SELECT 'event-highlight', 'Event Highlight', '모집/행사 공지에 맞는 카드형 구성', 'headline-benefits-action'
 WHERE NOT EXISTS (SELECT 1 FROM landing_templates WHERE id = 'event-highlight');
