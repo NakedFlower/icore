@@ -41,49 +41,6 @@ const MINOR_CATEGORY_BY_MAJOR = {
   지역별: ["울산", "서울", "부산", "대전", "광주", "제주"],
 };
 
-const COLOR_PRESETS = [
-  {
-    key: "calm-lab",
-    name: "Calm Lab",
-    cta_bg_color: "#0ea5e9",
-    title_color: "#0f172a",
-    subtitle_color: "#0369a1",
-    body_color: "#334155",
-    cta_text_color: "#ffffff",
-    background_color: "#f0f9ff",
-  },
-  {
-    key: "sunset-growth",
-    name: "Sunset Growth",
-    cta_bg_color: "#f97316",
-    title_color: "#7c2d12",
-    subtitle_color: "#c2410c",
-    body_color: "#9a3412",
-    cta_text_color: "#fff7ed",
-    background_color: "#fff7ed",
-  },
-  {
-    key: "forest-ops",
-    name: "Forest Ops",
-    cta_bg_color: "#15803d",
-    title_color: "#14532d",
-    subtitle_color: "#166534",
-    body_color: "#365314",
-    cta_text_color: "#f7fee7",
-    background_color: "#f7fee7",
-  },
-  {
-    key: "midnight-wave",
-    name: "Midnight Wave",
-    cta_bg_color: "#3b82f6",
-    title_color: "#e2e8f0",
-    subtitle_color: "#a5b4fc",
-    body_color: "#cbd5e1",
-    cta_text_color: "#ffffff",
-    background_color: "#020617",
-  },
-];
-
 const toBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -102,11 +59,6 @@ function LandingBuilder() {
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployResult, setDeployResult] = useState(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadedImagePreview, setUploadedImagePreview] = useState("");
-  const [uploadedImageBase64, setUploadedImageBase64] = useState("");
-  const [uploadedImageMimeType, setUploadedImageMimeType] = useState("");
-  const [uploadedImageFileName, setUploadedImageFileName] = useState("");
   const [previewViewport, setPreviewViewport] = useState("desktop");
   const [form] = Form.useForm();
   const values = Form.useWatch([], form) || {};
@@ -141,10 +93,6 @@ function LandingBuilder() {
       body: "",
       cta_text: "",
       cta_url: "",
-      hero_image_url: "",
-      title_color: "#0f172a",
-      subtitle_color: "#2563eb",
-      body_color: "#334155",
       features: [],
       curriculum: [],
       target_audience: [],
@@ -165,19 +113,6 @@ function LandingBuilder() {
     });
   }, [form]);
 
-  const applyColorPreset = (presetKey) => {
-    const preset = COLOR_PRESETS.find((item) => item.key === presetKey);
-    if (!preset) return;
-    form.setFieldsValue({
-      cta_bg_color: preset.cta_bg_color,
-      title_color: preset.title_color,
-      subtitle_color: preset.subtitle_color,
-      body_color: preset.body_color,
-      cta_text_color: preset.cta_text_color,
-      background_color: preset.background_color,
-    });
-  };
-
   const handleTemplateSelect = async (templateId) => {
     setPendingTemplateId(templateId);
     setIsTemplateDetailLoading(true);
@@ -190,10 +125,6 @@ function LandingBuilder() {
         subtitle: detail.subtitle || "",
         body: detail.body || "",
         cta_text: detail.cta_text || "",
-        hero_image_url: detail.hero_image_url || "",
-        title_color: detail.title_color || "#0f172a",
-        subtitle_color: detail.subtitle_color || "#2563eb",
-        body_color: detail.body_color || "#334155",
         features: detail.features || [],
         curriculum: detail.curriculum || [],
         target_audience: detail.target_audience || [],
@@ -223,9 +154,6 @@ function LandingBuilder() {
         "body",
         "cta_text",
         "cta_url",
-        "title_color",
-        "subtitle_color",
-        "body_color",
         "cta_text_color",
         "cta_bg_color",
         "background_color",
@@ -267,10 +195,6 @@ function LandingBuilder() {
           body: values.body,
           cta_text: values.cta_text,
           cta_url: values.cta_url,
-          hero_image_url: values.hero_image_url || null,
-          hero_image_file_name: uploadedImageFileName || null,
-          hero_image_mime_type: uploadedImageMimeType || null,
-          hero_image_base64: uploadedImageBase64 || null,
           features: values.features || [],
           curriculum: values.curriculum || [],
           target_audience: values.target_audience || [],
@@ -278,7 +202,7 @@ function LandingBuilder() {
           infos: values.infos || [],
           faqs: values.faqs || [],
           primary_color: values.cta_bg_color,
-          secondary_color: values.title_color,
+          secondary_color: "#0f172a",
           background_color: values.background_color,
         },
       };
@@ -294,25 +218,6 @@ function LandingBuilder() {
     }
   };
 
-  const handleUploadImage = async (file) => {
-    setUploadingImage(true);
-    try {
-      const dataUrl = await toBase64(file);
-      const [prefix, rawBase64] = String(dataUrl).split(",", 2);
-      const mime = prefix.match(/^data:(.*?);base64$/)?.[1] || file.type || "image/png";
-      setUploadedImagePreview(String(dataUrl));
-      setUploadedImageBase64(rawBase64 || "");
-      setUploadedImageMimeType(mime);
-      setUploadedImageFileName(file.name || "hero-image.png");
-      form.setFieldValue("hero_image_url", "");
-      message.success("이미지 파일이 준비되었습니다. 배포 시 함께 업로드됩니다.");
-    } catch (error) {
-      message.error("이미지 파일을 읽지 못했습니다.");
-    } finally {
-      setUploadingImage(false);
-    }
-    return false;
-  };
 
   return (
     <div className="landing-builder-page">
@@ -320,7 +225,6 @@ function LandingBuilder() {
         {!selectedTemplate ? (
           <Card
             title="1단계 · 템플릿 선택"
-            extra={<Typography.Text type="secondary">원하는 화면 분위기를 먼저 선택하세요.</Typography.Text>}
             loading={isTemplateLoading}
           >
             <Row gutter={[16, 16]}>
@@ -370,7 +274,7 @@ function LandingBuilder() {
                   </Typography.Paragraph>
                   <Space size={8} wrap>
                     <Tag color="blue">실시간 최종본 미리보기</Tag>
-                    <Tag color="geekblue">색상 프리셋 제공</Tag>
+                    <Tag color="geekblue">배경 색상만 변경</Tag>
                     <Tag color="cyan">모바일/데스크톱 전환</Tag>
                   </Space>
                 </div>
@@ -397,15 +301,12 @@ function LandingBuilder() {
                           <Input
                             placeholder="예시 : 울산의 미래를 코딩하다"
                             style={{
-                              color: values.title_color || "#0f172a",
+                              color: "#0f172a",
                               fontSize: 26,
                               fontWeight: 700,
                               height: 48,
                             }}
                           />
-                        </Form.Item>
-                        <Form.Item name="title_color" label="타이틀 색상" rules={[{ required: true }]}>
-                          <Input type="color" className="landing-builder-color" />
                         </Form.Item>
                       </div>
 
@@ -418,15 +319,12 @@ function LandingBuilder() {
                           <Input
                             placeholder="예시 : 빅테크 AI 인재 양성 프로젝트"
                             style={{
-                              color: values.subtitle_color || "#2563eb",
+                              color: "#2563eb",
                               fontSize: 18,
                               fontWeight: 600,
                               height: 42,
                             }}
                           />
-                        </Form.Item>
-                        <Form.Item name="subtitle_color" label="서브 타이틀 색상" rules={[{ required: true }]}>
-                          <Input type="color" className="landing-builder-color" />
                         </Form.Item>
                       </div>
 
@@ -439,35 +337,12 @@ function LandingBuilder() {
                           <Input.TextArea
                             rows={5}
                             placeholder="예시 : 울산 데이터센터 시대를 이끌어갈 실무 중심 AI/클라우드 교육 과정을 소개합니다."
-                            style={{ color: values.body_color || "#334155", fontSize: 15, lineHeight: 1.8 }}
+                            style={{ color: "#334155", fontSize: 15, lineHeight: 1.8 }}
                           />
-                        </Form.Item>
-                        <Form.Item name="body_color" label="설명 문구 색상" rules={[{ required: true }]}>
-                          <Input type="color" className="landing-builder-color" />
                         </Form.Item>
                       </div>
 
-                      <Form.Item name="hero_image_url" label="대표 이미지 URL(선택)">
-                        <Input placeholder="예시 : https://images.unsplash.com/..." />
-                      </Form.Item>
-
-                      <Form.Item label="대표 이미지 파일 업로드(선택)">
-                        <Space direction="vertical" size={8} style={{ width: "100%" }}>
-                          <Upload
-                            maxCount={1}
-                            accept="image/*"
-                            beforeUpload={handleUploadImage}
-                            showUploadList={false}
-                          >
-                            <Button loading={uploadingImage}>
-                              로컬에서 이미지 선택
-                            </Button>
-                          </Upload>
-                          {uploadedImageFileName ? (
-                            <Typography.Text type="secondary">선택됨: {uploadedImageFileName}</Typography.Text>
-                          ) : null}
-                        </Space>
-                      </Form.Item>
+                      <Divider className="landing-divider" />
 
                       <Row gutter={16}>
                         <Col xs={24} lg={12}>
@@ -790,113 +665,108 @@ function LandingBuilder() {
                         </div>
 
                         <div className="preview-hero">
-                          <h2 style={{ color: values.title_color || "#0f172a" }}>
+                          <h2 style={{ color: "#0f172a" }}>
                             {values.title || "예시 : 울산의 미래를 코딩하다"}
                           </h2>
-                          <p className="preview-subtitle" style={{ color: values.subtitle_color || "#2563eb" }}>
+                          <p className="preview-subtitle" style={{ color: "#2563eb" }}>
                             {values.subtitle || "예시 : 빅테크 AI 인재 양성 프로젝트"}
                           </p>
-                          <p className="preview-body" style={{ color: values.body_color || "#334155" }}>
+                          <p className="preview-body" style={{ color: "#334155" }}>
                             {values.body ||
                               "예시 : 실무 중심 커리큘럼과 프로젝트 기반 학습으로 성장을 가속화하세요."}
                           </p>
                         </div>
 
-                        {values.hero_image_url ? (
-                          <img src={values.hero_image_url} alt="랜딩 대표" className="landing-visual-image" />
-                        ) : uploadedImagePreview ? (
-                          <img src={uploadedImagePreview} alt="업로드 대표" className="landing-visual-image" />
-                        ) : (
-                          <div className="landing-visual-placeholder">대표 이미지를 넣으면 최종 랜딩처럼 보여줍니다.</div>
-                        )}
-
-                        <div className="preview-rich-content">
-                          {(values.target_audience && values.target_audience.length > 0) && (
-                            <div className="preview-target-audience">
-                              <h3>추천 대상</h3>
-                              <ul>
-                                {values.target_audience.map((t, idx) => (
-                                  <li key={idx}><span className="chk">✓</span> {t?.description || '대상'}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          {(values.features && values.features.length > 0) && (
-                            <div className="preview-features-grid">
-                              <h3>과정 특징</h3>
-                              <div className="grid">
-                                {values.features.map((f, idx) => (
-                                  <article key={idx}>
-                                    <h4>{f?.title || '특징'}</h4>
-                                    <p>{f?.description || '설명'}</p>
-                                  </article>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {(values.curriculum && values.curriculum.length > 0) && (
-                            <div className="preview-curriculum">
-                              <h3>커리큘럼</h3>
-                              <div className="timeline">
-                                {values.curriculum.map((c, idx) => (
-                                  <div key={idx} className="step">
-                                    <div className="marker" />
-                                    <div className="content">
-                                      <h4>{c?.step ? `${c.step}: ` : ''}{c?.title || '목표'}</h4>
-                                      <p>{c?.description || '내용'}</p>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {(values.stats && values.stats.length > 0) && (
-                            <div className="preview-stats-grid">
-                              <h3>📊 통계</h3>
-                              <div className="grid">
-                                {values.stats.map((s, idx) => (
-                                  <div key={idx} className="stat-card">
-                                    <strong>{s?.value || '-'}</strong>
-                                    <span>{s?.title || '항목'}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {(values.infos && values.infos.length > 0) && (
-                            <div className="preview-infos">
-                              <h3>📋 모집 정보</h3>
-                              <div className="info-list">
-                                {values.infos.map((info, idx) => (
-                                  <div key={idx} className="info-card">
-                                    <span className="label">{info?.label || '라벨'}</span>
-                                    <span className="val">{info?.val || '값'}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {(values.faqs && values.faqs.length > 0) && (
-                            <div className="preview-faqs">
-                              <h3>❓ FAQ</h3>
-                              <div className="faq-list">
-                                {values.faqs.map((faq, idx) => (
-                                  <details key={idx} className="faq-item">
-                                    <summary>{faq?.q || '질문'}</summary>
-                                    <div className="ans">{faq?.a || '답변'}</div>
-                                  </details>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                        <div className="landing-visual-placeholder">
+                          템플릿은 배경 색상으로만 구분됩니다.
                         </div>
 
-                        <Button
+                        {(values.target_audience && values.target_audience.length > 0) && (
+                          <div className="preview-target-audience">
+                            <h3>추천 대상</h3>
+                            <ul>
+                              {values.target_audience.map((t, idx) => (
+                                <li key={idx}><span className="chk">✓</span> {t?.description || '대상'}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {(values.features && values.features.length > 0) && (
+                          <div className="preview-features-grid">
+                            <h3>과정 특징</h3>
+                            <div className="grid">
+                              {values.features.map((f, idx) => (
+                                <article key={idx}>
+                                  <h4>{f?.title || '특징'}</h4>
+                                  <p>{f?.description || '설명'}</p>
+                                </article>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(values.curriculum && values.curriculum.length > 0) && (
+                          <div className="preview-curriculum">
+                            <h3>커리큘럼</h3>
+                            <div className="timeline">
+                              {values.curriculum.map((c, idx) => (
+                                <div key={idx} className="step">
+                                  <div className="marker" />
+                                  <div className="content">
+                                    <h4>{c?.step ? `${c.step}: ` : ''}{c?.title || '목표'}</h4>
+                                    <p>{c?.description || '내용'}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(values.stats && values.stats.length > 0) && (
+                          <div className="preview-stats-grid">
+                            <h3>📊 통계</h3>
+                            <div className="grid">
+                              {values.stats.map((s, idx) => (
+                                <div key={idx} className="stat-card">
+                                  <strong>{s?.value || '-'}</strong>
+                                  <span>{s?.title || '항목'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(values.infos && values.infos.length > 0) && (
+                          <div className="preview-infos">
+                            <h3>📋 모집 정보</h3>
+                            <div className="info-list">
+                              {values.infos.map((info, idx) => (
+                                <div key={idx} className="info-card">
+                                  <span className="label">{info?.label || '라벨'}</span>
+                                  <span className="val">{info?.val || '값'}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(values.faqs && values.faqs.length > 0) && (
+                          <div className="preview-faqs">
+                            <h3>❓ FAQ</h3>
+                            <div className="faq-list">
+                              {values.faqs.map((faq, idx) => (
+                                <details key={idx} className="faq-item">
+                                  <summary>{faq?.q || '질문'}</summary>
+                                  <div className="ans">{faq?.a || '답변'}</div>
+                                </details>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <Button
                           className="landing-live-cta"
                           style={{
                             backgroundColor: values.cta_bg_color || "#2563eb",
@@ -905,7 +775,6 @@ function LandingBuilder() {
                         >
                           {values.cta_text || "예시 : 지금 신청하기"}
                         </Button>
-                      </div>
                     </div>
                   </Col>
                 </Row>
