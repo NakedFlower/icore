@@ -399,6 +399,48 @@
   gap: 8px;
 }
 
+.landing-live-layout.template-preview-dark-product .ant-form-item-label > label,
+.landing-live-layout.template-preview-dark-product .ant-form-item-explain,
+.landing-live-layout.template-preview-dark-product .ant-typography,
+.landing-live-layout.template-preview-dark-product .ant-form-item-required {
+  color: rgba(248, 248, 252, 0.95) !important;
+}
+
+.landing-sticky-cta-preview {
+  margin-top: 20px;
+}
+
+.landing-sticky-cta-preview__card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.landing-live-layout.template-preview-dark-product .landing-sticky-cta-preview__card {
+  background: rgba(15, 23, 42, 0.88);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.landing-sticky-cta-preview__card strong {
+  font-size: 15px;
+}
+
+.landing-sticky-cta-preview__card p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #475569;
+}
+
+.landing-live-layout.template-preview-dark-product .landing-sticky-cta-preview__card p {
+  color: #cbd5e1;
+}
+
+
 .preview-infos .info-card {
   background: #fff;
   border: 1px solid #e5e7eb;

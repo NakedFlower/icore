@@ -102,8 +102,18 @@ function LandingBuilder() {
       title: "",
       subtitle: "",
       body: "",
+      hero_image_base64: null,
+      hero_image_url: "",
       cta_text: "",
       cta_url: "",
+      sticky_cta_text: "신청하기",
+      sticky_cta_url: "",
+      sticky_cta_note: "내일배움카드 보유 시 추가 혜택을 노출할 수 있는 문구를 입력하세요.",
+      instructor_name: "",
+      instructor_title: "",
+      instructor_description: "",
+      instructor_image_base64: null,
+      instructor_image_url: "",
       features: [],
       curriculum: [],
       target_audience: [],
@@ -138,7 +148,18 @@ function LandingBuilder() {
         title: detail.title || "",
         subtitle: detail.subtitle || "",
         body: detail.body || "",
+        hero_image_base64: null,
+        hero_image_url: detail.hero_image_url || "",
         cta_text: detail.cta_text || "",
+        cta_url: detail.cta_url || "",
+        sticky_cta_text: detail.sticky_cta_text || "신청하기",
+        sticky_cta_url: detail.sticky_cta_url || "",
+        sticky_cta_note: detail.sticky_cta_note || "내일배움카드 보유 시 추가 혜택을 노출할 수 있는 문구를 입력하세요.",
+        instructor_name: detail.instructor_name || "",
+        instructor_title: detail.instructor_title || "",
+        instructor_description: detail.instructor_description || "",
+        instructor_image_base64: null,
+        instructor_image_url: detail.instructor_image_url || "",
         features: detail.features || [],
         curriculum: detail.curriculum || [],
         target_audience: detail.target_audience || [],
@@ -210,8 +231,18 @@ function LandingBuilder() {
           title: values.title,
           subtitle: values.subtitle,
           body: values.body,
+          hero_image_base64: values.hero_image_base64 || null,
+          hero_image_url: values.hero_image_url || null,
           cta_text: values.cta_text,
           cta_url: values.cta_url,
+          sticky_cta_text: values.sticky_cta_text || "신청하기",
+          sticky_cta_url: values.sticky_cta_url || "",
+          sticky_cta_note: values.sticky_cta_note || "",
+          instructor_name: values.instructor_name || "",
+          instructor_title: values.instructor_title || "",
+          instructor_description: values.instructor_description || "",
+          instructor_image_base64: values.instructor_image_base64 || null,
+          instructor_image_url: values.instructor_image_url || null,
           features: values.features || [],
           curriculum: values.curriculum || [],
           target_audience: values.target_audience || [],
@@ -373,6 +404,30 @@ function LandingBuilder() {
                         </Form.Item>
                       </div>
 
+                      <div>
+                        <Form.Item name="hero_image_base64" label="상단 대표 이미지">
+                          <Upload
+                            maxCount={1}
+                            accept="image/*"
+                            showUploadList={false}
+                            beforeUpload={async (file) => {
+                              const dataUrl = await toBase64(file);
+                              form.setFieldsValue({ hero_image_base64: dataUrl });
+                              return false;
+                            }}
+                          >
+                            <Button size="small">이미지 업로드</Button>
+                          </Upload>
+                          {(values.hero_image_base64 || values.hero_image_url) && (
+                            <img
+                              src={values.hero_image_base64 || values.hero_image_url}
+                              alt="상단 대표 이미지"
+                              style={{ width: 180, height: 120, objectFit: 'cover', borderRadius: 12, marginTop: 12, border: '1px solid #e2e8f0' }}
+                            />
+                          )}
+                        </Form.Item>
+                      </div>
+
                       <Divider className="landing-divider" />
 
                       <Row gutter={16}>
@@ -395,6 +450,89 @@ function LandingBuilder() {
                           </Form.Item>
                         </Col>
                       </Row>
+
+                      <Divider className="landing-divider" />
+
+                      <div style={{ background: '#f8fafc', padding: 16, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+                        <Typography.Title level={5}>강사 소개</Typography.Title>
+                        <Row gutter={16}>
+                          <Col xs={24} lg={12}>
+                            <Form.Item
+                              name="instructor_name"
+                              label="강사 이름"
+                            >
+                              <Input placeholder="예시 : 차보영 강사님" />
+                            </Form.Item>
+                            <Form.Item
+                              name="instructor_title"
+                              label="강사 직책/소개"
+                            >
+                              <Input placeholder="예시 : 네이버파이낸셜 서비스 기획(PM)" />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} lg={12}>
+                            <Form.Item name="instructor_image_base64" label="강사 이미지">
+                              <Upload
+                                maxCount={1}
+                                accept="image/*"
+                                showUploadList={false}
+                                beforeUpload={async (file) => {
+                                  const dataUrl = await toBase64(file);
+                                  form.setFieldsValue({ instructor_image_base64: dataUrl });
+                                  return false;
+                                }}
+                              >
+                                <Button size="small">이미지 업로드</Button>
+                              </Upload>
+                              {(values.instructor_image_base64 || values.instructor_image_url) && (
+                                <img
+                                  src={values.instructor_image_base64 || values.instructor_image_url}
+                                  alt="강사 이미지"
+                                  style={{ width: 180, height: 180, objectFit: 'cover', borderRadius: 14, marginTop: 12, border: '1px solid #e2e8f0' }}
+                                />
+                              )}
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                        <Form.Item
+                          name="instructor_description"
+                          label="강사 소개 문구"
+                        >
+                          <Input.TextArea rows={4} placeholder="예시 : 네이버파이낸셜, 쏘카, 타다 등에서 쌓은 기획 노하우를 전수합니다." />
+                        </Form.Item>
+                      </div>
+
+                      <Divider className="landing-divider" />
+
+                      <div style={{ background: '#f8fafc', padding: 16, borderRadius: 16, border: '1px solid #e2e8f0' }}>
+                        <Typography.Title level={5}>고정 신청 모달</Typography.Title>
+                        <Row gutter={16}>
+                          <Col xs={24} lg={12}>
+                            <Form.Item
+                              name="sticky_cta_text"
+                              label="모달 버튼 문구"
+                              rules={[{ required: true, message: '모달 버튼 문구를 입력하세요.' }]}
+                            >
+                              <Input placeholder="예시 : 신청하기" />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} lg={12}>
+                            <Form.Item
+                              name="sticky_cta_url"
+                              label="모달 버튼 링크"
+                              rules={[{ required: true, message: '모달 버튼 링크를 입력하세요.' }]}
+                            >
+                              <Input placeholder="예시 : https://tool.icore.co.kr/apply" />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                        <Form.Item
+                          name="sticky_cta_note"
+                          label="모달 하단 안내 문구"
+                        >
+                          <Input.TextArea rows={3} placeholder="예시 : 내일배움카드 보유 시 20,400원에 수강 가능합니다." />
+                        </Form.Item>
+                      </div>
 
                       <Divider className="landing-divider" />
 
@@ -667,6 +805,15 @@ function LandingBuilder() {
                             </>
                           )}
                         </Form.List>
+                      </div>
+                      <div className="landing-sticky-cta-preview">
+                        <div className="landing-sticky-cta-preview__card">
+                          <div>
+                            <strong>{values.sticky_cta_text || "신청하기"}</strong>
+                            <p>{values.sticky_cta_note || "내일배움카드 보유 시 추가 혜택을 노출할 수 있는 문구를 입력하세요."}</p>
+                          </div>
+                          <Button type="primary">{values.sticky_cta_text || "신청하기"}</Button>
+                        </div>
                       </div>
                     </div>
                   </div>
