@@ -49,6 +49,17 @@ const toBase64 = (file) =>
     reader.onerror = reject;
   });
 
+const parseCssString = (cssString = "") =>
+  cssString.split(";").reduce((style, declaration) => {
+    const [property, value] = declaration.split(":");
+    if (!property || !value) return style;
+    const key = property
+      .trim()
+      .replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+    style[key] = value.trim();
+    return style;
+  }, {});
+
 function LandingBuilder() {
   const [templates, setTemplates] = useState([]);
   const [isTemplateLoading, setIsTemplateLoading] = useState(false);
@@ -241,6 +252,7 @@ function LandingBuilder() {
                       <div 
                         className="template-mini-preview"
                         style={{
+                          ...(template.preview_style ? parseCssString(template.preview_style) : {}),
                           backgroundColor: template.background_color || "#f8fafc",
                           color: template.title_color || "#0f172a"
                         }}
@@ -300,7 +312,16 @@ function LandingBuilder() {
             </Card>
 
             <Card title="2단계 · 화면 문구 입력">
-              <div className="landing-live-layout" style={{ backgroundColor: values.background_color || "#f8fafc" }}>
+              <div
+                className={`landing-live-layout ${selectedTemplate ? `template-preview-${selectedTemplate.id}` : ""}`}
+                style={{
+                  ...(selectedTemplate?.preview_style ? parseCssString(selectedTemplate.preview_style) : {}),
+                  backgroundColor:
+                    selectedTemplate?.preview_style || !values.background_color
+                      ? undefined
+                      : values.background_color || "#f8fafc",
+                }}
+              >
                 <div className="landing-copy-editor">
                       <div className="landing-inline-field">
                         <Form.Item

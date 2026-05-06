@@ -89,6 +89,19 @@
     radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.12), transparent 34%);
 }
 
+.landing-live-layout.template-preview-clean-campaign {
+  background: linear-gradient(145deg, #eff6ff, #ecfeff);
+}
+
+.landing-live-layout.template-preview-dark-product {
+  background: linear-gradient(145deg, #020617, #0f172a);
+  color: #f8fafc;
+}
+
+.landing-live-layout.template-preview-event-highlight {
+  background: linear-gradient(145deg, #fff7ed, #fefce8);
+}
+
 .landing-copy-editor {
   display: grid;
   gap: 10px;
