@@ -408,17 +408,20 @@
 
 .landing-sticky-cta-preview {
   margin-top: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .landing-sticky-cta-preview__card {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 20px;
-  padding: 16px 18px;
+  padding: 16px 24px;
   border-radius: 18px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
+  max-width: fit-content;
 }
 
 .landing-live-layout.template-preview-dark-product .landing-sticky-cta-preview__card {
