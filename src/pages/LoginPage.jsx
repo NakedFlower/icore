@@ -1,5 +1,5 @@
 import { Button, Card, Form, Input, Typography, message } from "antd";
-import { API_BASE_URL, authApi, AUTH_TOKEN_KEY } from "../api/client";
+import { API_BASE_URL, authApi, AUTH_TOKEN_KEY, formatApiError } from "../api/client";
 import "./LoginPage.css";
 
 function LoginPage({ onSuccess }) {
@@ -22,7 +22,7 @@ function LoginPage({ onSuccess }) {
         return;
       }
 
-      message.error(error?.response?.data?.detail || "로그인에 실패했습니다.");
+      message.error(formatApiError(error, "로그인에 실패했습니다."));
     }
   };
 

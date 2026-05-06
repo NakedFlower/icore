@@ -15,7 +15,7 @@ import {
 } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { scraperApi } from "../api/client";
+import { formatApiError, scraperApi } from "../api/client";
 import "./ScraperControl.css";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -89,7 +89,7 @@ function ScraperControl() {
       });
       setRunHistory(config.recent_runs || []);
     } catch (error) {
-      message.error(error?.response?.data?.detail || "설정 조회에 실패했습니다.");
+      message.error(formatApiError(error, "설정 조회에 실패했습니다."));
     } finally {
       setLoading(false);
     }
@@ -126,7 +126,7 @@ function ScraperControl() {
         setRunHistory(response.data.config.recent_runs);
       }
     } catch (error) {
-      message.error(error?.response?.data?.detail || "설정 저장에 실패했습니다.");
+      message.error(formatApiError(error, "설정 저장에 실패했습니다."));
     }
   };
 
@@ -136,7 +136,7 @@ function ScraperControl() {
       message.success(response.data.message);
       loadRuns();
     } catch (error) {
-      message.error(error?.response?.data?.detail || "즉시 실행 요청에 실패했습니다.");
+      message.error(formatApiError(error, "즉시 실행 요청에 실패했습니다."));
     }
   };
 

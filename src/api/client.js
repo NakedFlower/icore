@@ -37,6 +37,41 @@ function normalizeApiBaseUrl(rawUrl) {
 
 export const API_BASE_URL = normalizeApiBaseUrl(configuredApiBaseUrl);
 
+/** FastAPI 422 등에서 detail이 문자열·객체 배열·단일 객체일 때 안전한 메시지 문자열로 변환 */
+export function formatApiError(error, fallback = "요청에 실패했습니다.") {
+  const detail = error?.response?.data?.detail;
+  if (detail == null || detail === "") {
+    return fallback;
+  }
+  if (typeof detail === "string") {
+    return detail;
+  }
+  if (Array.isArray(detail)) {
+    const lines = detail
+      .map((item) => {
+        if (item == null) return "";
+        if (typeof item === "string") return item;
+        if (typeof item.msg === "string") {
+          const loc = Array.isArray(item.loc)
+            ? item.loc.filter((p) => p !== "body").join(".")
+            : "";
+          return loc ? `${loc}: ${item.msg}` : item.msg;
+        }
+        return "";
+      })
+      .filter(Boolean);
+    return lines.length ? lines.join("\n") : fallback;
+  }
+  if (typeof detail === "object" && typeof detail.msg === "string") {
+    return detail.msg;
+  }
+  try {
+    return JSON.stringify(detail);
+  } catch {
+    return fallback;
+  }
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,

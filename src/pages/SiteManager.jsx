@@ -13,7 +13,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { siteApi } from "../api/client";
+import { formatApiError, siteApi } from "../api/client";
 import "./SiteManager.css";
 
 function SiteManager() {
@@ -29,7 +29,7 @@ function SiteManager() {
       const response = await siteApi.listSites();
       setSites(response.data);
     } catch (error) {
-      message.error(error?.response?.data?.detail || "랜딩 페이지 목록 조회에 실패했습니다.");
+      message.error(formatApiError(error, "랜딩 페이지 목록 조회에 실패했습니다."));
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ function SiteManager() {
       form.resetFields();
       loadSites();
     } catch (error) {
-      message.error(error?.response?.data?.detail || "수정에 실패했습니다.");
+      message.error(formatApiError(error, "수정에 실패했습니다."));
     } finally {
       setSubmitting(false);
     }
@@ -72,7 +72,7 @@ function SiteManager() {
       message.success("랜딩 페이지가 삭제되었습니다.");
       loadSites();
     } catch (error) {
-      message.error(error?.response?.data?.detail || "삭제에 실패했습니다.");
+      message.error(formatApiError(error, "삭제에 실패했습니다."));
     }
   };
 

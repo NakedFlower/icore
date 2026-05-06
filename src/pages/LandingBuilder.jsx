@@ -19,7 +19,7 @@ import {
   Upload,
   message,
 } from "antd";
-import { builderApi } from "../api/client";
+import { builderApi, formatApiError } from "../api/client";
 import "./LandingBuilder.css";
 
 const DEPLOY_RETENTION_OPTIONS = [
@@ -59,6 +59,20 @@ const parseCssString = (cssString = "") =>
     style[key] = value.trim();
     return style;
   }, {});
+
+/** API는 #rrggbb만 허용하지 않고 3·8자리 hex도 받을 수 있게 백엔드를 맞춤; 여기서는 6자리로 통일 */
+function normalizeHexColor(value, fallback) {
+  if (value == null || typeof value !== "string") return fallback;
+  const v = value.trim();
+  if (!v.startsWith("#")) return fallback;
+  const hex = v.slice(1);
+  if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+    return `#${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`.toLowerCase();
+  }
+  if (/^[0-9a-fA-F]{6}$/.test(hex)) return `#${hex.toLowerCase()}`;
+  if (/^[0-9a-fA-F]{8}$/.test(hex)) return `#${hex.slice(0, 6).toLowerCase()}`;
+  return fallback;
+}
 
 function LandingBuilder() {
   const [templates, setTemplates] = useState([]);
@@ -177,7 +191,7 @@ function LandingBuilder() {
       setSelectedTemplateId(templateId);
       setDeployResult(null);
     } catch (error) {
-      message.error(error?.response?.data?.detail || "선택한 템플릿을 GCS에서 불러오지 못했습니다.");
+      message.error(formatApiError(error, "선택한 템플릿을 GCS에서 불러오지 못했습니다."));
     } finally {
       setIsTemplateDetailLoading(false);
       setPendingTemplateId(null);
@@ -232,7 +246,7 @@ function LandingBuilder() {
           subtitle: values.subtitle,
           body: values.body,
           hero_image_base64: values.hero_image_base64 || null,
-          hero_image_url: values.hero_image_url || null,
+          hero_image_url: (values.hero_image_url && String(values.hero_image_url).trim()) || null,
           cta_text: values.cta_text,
           cta_url: values.cta_url,
           sticky_cta_text: values.sticky_cta_text || "신청하기",
@@ -242,16 +256,16 @@ function LandingBuilder() {
           instructor_title: values.instructor_title || "",
           instructor_description: values.instructor_description || "",
           instructor_image_base64: values.instructor_image_base64 || null,
-          instructor_image_url: values.instructor_image_url || null,
+          instructor_image_url: (values.instructor_image_url && String(values.instructor_image_url).trim()) || null,
           features: values.features || [],
           curriculum: values.curriculum || [],
           target_audience: values.target_audience || [],
           stats: values.stats || [],
           infos: values.infos || [],
           faqs: values.faqs || [],
-          primary_color: values.cta_bg_color,
-          secondary_color: "#0f172a",
-          background_color: values.background_color,
+          primary_color: normalizeHexColor(values.cta_bg_color, "#2563eb"),
+          secondary_color: normalizeHexColor(values.secondary_color, "#0f172a"),
+          background_color: normalizeHexColor(values.background_color, "#f8fafc"),
         },
       };
       const response = await builderApi.deploy(payload);
@@ -260,7 +274,7 @@ function LandingBuilder() {
       setIsResultModalOpen(true);
       message.success("배포가 완료되었습니다.");
     } catch (error) {
-      message.error(error?.response?.data?.detail || "배포 요청에 실패했습니다.");
+      message.error(formatApiError(error, "배포 요청에 실패했습니다."));
     } finally {
       setIsDeploying(false);
     }
