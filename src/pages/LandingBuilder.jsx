@@ -99,6 +99,9 @@ function LandingBuilder() {
       stats: [],
       infos: [],
       faqs: [],
+      title_color: "#0f172a",
+      subtitle_color: "#2563eb",
+      body_color: "#334155",
       cta_text_color: "#ffffff",
       cta_bg_color: "#2563eb",
       background_color: "#f8fafc",
@@ -131,6 +134,9 @@ function LandingBuilder() {
         stats: detail.stats || [],
         infos: detail.infos || [],
         faqs: detail.faqs || [],
+        title_color: detail.title_color || "#0f172a",
+        subtitle_color: detail.subtitle_color || "#2563eb",
+        body_color: detail.body_color || "#334155",
         cta_text_color: detail.cta_text_color || "#ffffff",
         cta_bg_color: detail.cta_bg_color || "#2563eb",
         background_color: detail.background_color || "#f8fafc",
@@ -232,14 +238,20 @@ function LandingBuilder() {
                 return (
                   <Col xs={24} lg={8} key={template.id}>
                     <Card className="template-option-card" bodyStyle={{ padding: 16 }}>
-                      <div className={`template-mini-preview template-${template.id}`}>
+                      <div 
+                        className="template-mini-preview"
+                        style={{
+                          backgroundColor: template.background_color || "#f8fafc",
+                          color: template.title_color || "#0f172a"
+                        }}
+                      >
                         <div className="template-micro-nav">
                           <span />
                           <span />
                           <span />
                         </div>
-                        <h4>{template.name}</h4>
-                        <p>{template.description}</p>
+                        <h4 style={{ color: template.title_color || "#0f172a" }}>{template.name}</h4>
+                        <p style={{ color: template.body_color || "#334155" }}>{template.description}</p>
                       </div>
                       <Typography.Title level={5} className="template-option-title">
                         {template.name}
@@ -299,7 +311,7 @@ function LandingBuilder() {
                           <Input
                             placeholder="예시 : 울산의 미래를 코딩하다"
                             style={{
-                              color: "#0f172a",
+                              color: values.title_color || "#0f172a",
                               fontSize: 26,
                               fontWeight: 700,
                               height: 48,
@@ -317,7 +329,7 @@ function LandingBuilder() {
                           <Input
                             placeholder="예시 : 빅테크 AI 인재 양성 프로젝트"
                             style={{
-                              color: "#2563eb",
+                              color: values.subtitle_color || "#2563eb",
                               fontSize: 18,
                               fontWeight: 600,
                               height: 42,
@@ -335,7 +347,7 @@ function LandingBuilder() {
                           <Input.TextArea
                             rows={5}
                             placeholder="예시 : 울산 데이터센터 시대를 이끌어갈 실무 중심 AI/클라우드 교육 과정을 소개합니다."
-                            style={{ color: "#334155", fontSize: 15, lineHeight: 1.8 }}
+                            style={{ color: values.body_color || "#334155", fontSize: 15, lineHeight: 1.8 }}
                           />
                         </Form.Item>
                       </div>

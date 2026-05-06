@@ -39,24 +39,6 @@
   background: rgba(15, 23, 42, 0.25);
 }
 
-.template-clean-campaign {
-  background: linear-gradient(145deg, #f0f9ff, #ecfeff);
-}
-
-.template-dark-product {
-  background: linear-gradient(145deg, #0f172a, #020617);
-  color: #e2e8f0;
-}
-
-.template-dark-product small,
-.template-dark-product p {
-  color: #cbd5e1;
-}
-
-.template-event-highlight {
-  background: linear-gradient(145deg, #fff7ed, #fefce8);
-}
-
 .template-mini-preview h4,
 .template-mini-preview p,
 .template-mini-preview small {
