@@ -289,9 +289,7 @@ function LandingBuilder() {
 
             <Card title="2단계 · 화면 문구 입력">
               <div className="landing-live-layout" style={{ backgroundColor: values.background_color || "#f8fafc" }}>
-                <Row gutter={[24, 24]}>
-                  <Col xs={24} lg={13}>
-                    <div className="landing-copy-editor">
+                <div className="landing-copy-editor">
                       <div className="landing-inline-field">
                         <Form.Item
                           name="title"
@@ -638,150 +636,10 @@ function LandingBuilder() {
                         </Form.List>
                       </div>
                     </div>
-                  </Col>
-
-                  <Col xs={24} lg={11}>
-                    <div className="landing-preview-frame">
-                      <div className="landing-preview-topbar">
-                        <Typography.Text strong>최종본 미리보기</Typography.Text>
-                        <Segmented
-                          options={[
-                            { label: "Desktop", value: "desktop" },
-                            { label: "Mobile", value: "mobile" },
-                          ]}
-                          value={previewViewport}
-                          onChange={setPreviewViewport}
-                          size="small"
-                        />
-                      </div>
-
-                      <div
-                        className={`landing-visual-pane ${previewViewport === "mobile" ? "is-mobile" : ""}`}
-                        style={{ backgroundColor: values.background_color || "#f8fafc" }}
-                      >
-                        <div className="preview-nav">
-                          <strong>{values.business_name || "예시 : iCore AI Education"}</strong>
-                          <span>Template · {selectedTemplate.name}</span>
-                        </div>
-
-                        <div className="preview-hero">
-                          <h2 style={{ color: "#0f172a" }}>
-                            {values.title || "예시 : 울산의 미래를 코딩하다"}
-                          </h2>
-                          <p className="preview-subtitle" style={{ color: "#2563eb" }}>
-                            {values.subtitle || "예시 : 빅테크 AI 인재 양성 프로젝트"}
-                          </p>
-                          <p className="preview-body" style={{ color: "#334155" }}>
-                            {values.body ||
-                              "예시 : 실무 중심 커리큘럼과 프로젝트 기반 학습으로 성장을 가속화하세요."}
-                          </p>
-                        </div>
-
-                        <div className="landing-visual-placeholder">
-                          템플릿은 배경 색상으로만 구분됩니다.
-                        </div>
-
-                        {(values.target_audience && values.target_audience.length > 0) && (
-                          <div className="preview-target-audience">
-                            <h3>추천 대상</h3>
-                            <ul>
-                              {values.target_audience.map((t, idx) => (
-                                <li key={idx}><span className="chk">✓</span> {t?.description || '대상'}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {(values.features && values.features.length > 0) && (
-                          <div className="preview-features-grid">
-                            <h3>과정 특징</h3>
-                            <div className="grid">
-                              {values.features.map((f, idx) => (
-                                <article key={idx}>
-                                  <h4>{f?.title || '특징'}</h4>
-                                  <p>{f?.description || '설명'}</p>
-                                </article>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {(values.curriculum && values.curriculum.length > 0) && (
-                          <div className="preview-curriculum">
-                            <h3>커리큘럼</h3>
-                            <div className="timeline">
-                              {values.curriculum.map((c, idx) => (
-                                <div key={idx} className="step">
-                                  <div className="marker" />
-                                  <div className="content">
-                                    <h4>{c?.step ? `${c.step}: ` : ''}{c?.title || '목표'}</h4>
-                                    <p>{c?.description || '내용'}</p>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {(values.stats && values.stats.length > 0) && (
-                          <div className="preview-stats-grid">
-                            <h3>📊 통계</h3>
-                            <div className="grid">
-                              {values.stats.map((s, idx) => (
-                                <div key={idx} className="stat-card">
-                                  <strong>{s?.value || '-'}</strong>
-                                  <span>{s?.title || '항목'}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {(values.infos && values.infos.length > 0) && (
-                          <div className="preview-infos">
-                            <h3>📋 모집 정보</h3>
-                            <div className="info-list">
-                              {values.infos.map((info, idx) => (
-                                <div key={idx} className="info-card">
-                                  <span className="label">{info?.label || '라벨'}</span>
-                                  <span className="val">{info?.val || '값'}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {(values.faqs && values.faqs.length > 0) && (
-                          <div className="preview-faqs">
-                            <h3>❓ FAQ</h3>
-                            <div className="faq-list">
-                              {values.faqs.map((faq, idx) => (
-                                <details key={idx} className="faq-item">
-                                  <summary>{faq?.q || '질문'}</summary>
-                                  <div className="ans">{faq?.a || '답변'}</div>
-                                </details>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <Button
-                          className="landing-live-cta"
-                          style={{
-                            backgroundColor: values.cta_bg_color || "#2563eb",
-                            color: values.cta_text_color || "#ffffff",
-                          }}
-                        >
-                          {values.cta_text || "예시 : 지금 신청하기"}
-                        </Button>
-                    </div>
-                  </Col>
-                </Row>
-              </div>
-            </Card>
-          </Space>
-        )}
+                  </div>
+                </Card>
+            </Space>
+          )}
       {deployResult && (
         <Alert
           className="landing-builder-result"
