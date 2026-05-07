@@ -415,13 +415,14 @@
 .landing-sticky-cta-preview__card {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 20px;
-  padding: 16px 24px;
-  border-radius: 18px;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 20px;
+  border-radius: 14px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  max-width: fit-content;
+  width: 100%;
+  max-width: 700px;
 }
 
 .landing-live-layout.template-preview-dark-product .landing-sticky-cta-preview__card {
@@ -441,6 +442,68 @@
 
 .landing-live-layout.template-preview-dark-product .landing-sticky-cta-preview__card p {
   color: #cbd5e1;
+}
+
+.landing-sticky-cta-preview__card .sticky-cta-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.landing-sticky-cta-preview__card .sticky-cta-left p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.landing-sticky-cta-preview__card .sticky-cta-right {
+  flex-shrink: 0;
+}
+
+/* ── Builder Footer ── */
+.landing-builder-footer {
+  margin-top: 40px;
+  padding: 40px 0;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.landing-builder-footer .footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.landing-builder-footer .footer-course-name {
+  font-weight: bold;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.landing-builder-footer .footer-contact-box {
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  max-width: 400px;
+}
+
+.landing-builder-footer .footer-contact-box p {
+  margin: 2px 0;
+}
+
+.landing-builder-footer .footer-contact-title {
+  font-weight: bold;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.landing-builder-footer a {
+  color: #2563eb;
 }
 
 
