@@ -7,22 +7,40 @@
   "body": "Get a personalized learning route, weekly checkpoints, and direct feedback from industry mentors.",
   "cta_text": "Reserve your spot",
   "hero_image_url": "",
-  "title_color": "#111827",
-  "subtitle_color": "#f97316",
-  "body_color": "#374151",
+  "title_color": "#FFFFFF",
+  "subtitle_color": "#4285F4",
+  "body_color": "#B0B8C1",
   "cta_text_color": "#ffffff",
-  "cta_bg_color": "#111827",
-  "background_color": "#fff7ed",
+  "cta_bg_color": "#4285F4",
+  "background_color": "#0D1117",
   "features": [
-    { "title": "Weekly Checkpoints", "description": "Ensure steady progress with scheduled reviews." },
-    { "title": "Industry Mentors", "description": "1:1 coaching with tech leads." }
+    {
+      "title": "Weekly Checkpoints",
+      "description": "Ensure steady progress with scheduled reviews."
+    },
+    {
+      "title": "Industry Mentors",
+      "description": "1:1 coaching with tech leads."
+    }
   ],
   "curriculum": [
-    { "step": "Session 1", "title": "Kickoff", "description": "Meet the team and configure your environment." },
-    { "step": "Session 2", "title": "First Project", "description": "Build a simple app collaboratively." }
+    {
+      "step": "Session 1",
+      "title": "Kickoff",
+      "description": "Meet the team and configure your environment."
+    },
+    {
+      "step": "Session 2",
+      "title": "First Project",
+      "description": "Build a simple app collaboratively."
+    }
   ],
   "target_audience": [
-    { "description": "Future AI Developers" },
-    { "description": "Career Transitioners" }
+    {
+      "description": "Future AI Developers"
+    },
+    {
+      "description": "Career Transitioners"
+    }
   ]
 }
