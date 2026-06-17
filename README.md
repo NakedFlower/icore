@@ -144,98 +144,107 @@ VM 외부인 Google Cloud Run 환경에 별도로 배포되는 분산 스크래�
 ## 4. 데이터베이스 엔티티 상세 스펙 및 컬럼 관계
 
 ### (1) `landing_templates`
-| 컬럼명 | 데이터 타입 | Null 여부 | 특징 |
-| :--- | :--- | :--- | :--- |
-| `id` | VARCHAR(80) | NOT NULL | PK (예: clean-campaign) |
-| `name` | VARCHAR(120) | NOT NULL | 템플릿 표시 명칭 |
-| `description` | VARCHAR(240) | NOT NULL | 템플릿 간략 설명 |
-| `preview_style` | VARCHAR(120) | NOT NULL | 어드민 미리보기 렌더링용 인라인 CSS 스타일 |
+| 컬럼명 | 데이터 타입 | Null 여부 | Key | 기본값 | 특징 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | VARCHAR(80) | NO | PRI | NULL | PK (예: clean-campaign) |
+| `name` | VARCHAR(120) | NO | | NULL | 템플릿 표시 명칭 |
+| `description` | VARCHAR(240) | NO | | NULL | 템플릿 간략 설명 |
+| `preview_style` | VARCHAR(120) | NO | | NULL | 어드민 미리보기 렌더링용 인라인 CSS 스타일 |
 
 ### (2) `landing_pages`
-| 컬럼명 | 데이터 타입 | Null 여부 | 특징 |
-| :--- | :--- | :--- | :--- |
-| `id` | VARCHAR(36) | NOT NULL | PK (UUID 문자열) |
-| `template_id` | VARCHAR(80) | NOT NULL | `landing_templates.id` 참조 관계 |
-| `business_topic` | VARCHAR(120) | NOT NULL | 화면 분류 (대주제, INDEX 지정) |
-| `business_name` | VARCHAR(120) | NOT NULL | 화면 이름 (소주제) |
-| `major_categories` | TEXT | NOT NULL | 대분류 목록 (쉼표 구분) |
-| `minor_categories` | TEXT | NOT NULL | 소분류 목록 (쉼표 구분) |
-| `slug` | VARCHAR(120) | NOT NULL | 최종 URL 슬러그 (UNIQUE INDEX 지정) |
-| `url` | VARCHAR(500) | NOT NULL | 배포된 GCS 웹 index.html 경로 링크 |
-| `status` | VARCHAR(16) | NOT NULL | active, paused, archived 상태 |
-| `retention_days` | INT | NOT NULL | 만료 보존 일수 (기본 30일) |
-| `expires_at` | DATETIME | NOT NULL | 만료 일시 |
-| `is_visible` | BOOLEAN | NOT NULL | 노출 활성화 여부 (기본 True) |
-| `deleted_at` | DATETIME | NULL | 삭제(archived) 처리 일시 |
-| `custom_domain` | VARCHAR(240) | NULL | 별도 지정 도메인 주소 |
-| `title` / `subtitle` | VARCHAR(120/240) | NOT NULL | 메인/서브 타이틀 문구 |
-| `body` | TEXT | NOT NULL | 설명 본문 |
-| `cta_text` / `cta_url` | VARCHAR(60/240) | NOT NULL | CTA 버튼 문구 및 대상 링크 |
-| `primary_color` | VARCHAR(7) | NOT NULL | 메인 테마 색상 Hex 코드 (#rrggbb) |
-| `secondary_color` | VARCHAR(7) | NOT NULL | 보조 테마 색상 Hex 코드 |
-| `background_color` | VARCHAR(7) | NOT NULL | 페이지 배경 색상 Hex 코드 |
-| `features_json` | TEXT | NOT NULL | 과정 특징 목록 JSON 직렬화 문자열 |
-| `curriculum_json` | TEXT | NOT NULL | 커리큘럼 트랙 목록 JSON 직렬화 문자열 |
-| `target_audience_json`| TEXT | NOT NULL | 대상 수강생 리스트 JSON 직렬화 문자열 |
-| `stats_json` | TEXT | NOT NULL | 통계 지표 정보 JSON 직렬화 문자열 |
-| `infos_json` | TEXT | NOT NULL | 모집 개요 카드 정보 JSON 직렬화 문자열 |
-| `faqs_json` | TEXT | NOT NULL | FAQ 아코디언 Q&A JSON 직렬화 문자열 |
-| `deployed_at` | DATETIME | NOT NULL | 배포 시각 |
-| `created_at` / `updated_at` | DATETIME | NOT NULL | 데이터 삽입/갱신 타임스탬프 |
+| 컬럼명 | 데이터 타입 | Null 여부 | Key | 기본값 | 특징 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | VARCHAR(36) | NO | PRI | NULL | PK (UUID 문자열) |
+| `template_id` | VARCHAR(80) | NO | | NULL | 템플릿 ID 참조 관계 |
+| `business_topic` | VARCHAR(120) | NO | MUL | NULL | 화면 분류 (대주제, INDEX 지정) |
+| `business_name` | VARCHAR(120) | NO | | NULL | 화면 이름 (소주제) |
+| `major_categories` | TEXT | NO | | NULL | 대분류 목록 (쉼표 구분) |
+| `minor_categories` | TEXT | NO | | NULL | 소분류 목록 (쉼표 구분) |
+| `slug` | VARCHAR(120) | NO | UNI | NULL | 최종 URL 슬러그 (UNIQUE INDEX 지정) |
+| `url` | VARCHAR(500) | NO | | NULL | 배포된 GCS 웹 index.html 경로 링크 |
+| `status` | VARCHAR(16) | NO | | active | active, paused, archived 상태 |
+| `retention_days` | INT | NO | | 30 | 만료 보존 일수 (기본 30일) |
+| `expires_at` | DATETIME(6) | NO | | NULL | 만료 일시 |
+| `is_visible` | TINYINT(1) | NO | | 1 | 노출 활성화 여부 |
+| `deleted_at` | DATETIME(6) | YES | | NULL | 삭제(archived) 처리 일시 |
+| `custom_domain` | VARCHAR(240) | YES | | NULL | 별도 지정 도메인 주소 |
+| `title` | VARCHAR(120) | NO | | NULL | 메인 타이틀 문구 |
+| `subtitle` | VARCHAR(240) | NO | | NULL | 서브 타이틀 문구 |
+| `body` | TEXT | NO | | NULL | 설명 본문 |
+| `cta_text` | VARCHAR(60) | NO | | NULL | CTA 버튼 문구 |
+| `cta_url` | VARCHAR(240) | NO | | NULL | 대상 링크 |
+| `primary_color` | VARCHAR(7) | NO | | NULL | 메인 테마 색상 Hex 코드 (#rrggbb) |
+| `secondary_color` | VARCHAR(7) | NO | | NULL | 보조 테마 색상 Hex 코드 |
+| `background_color` | VARCHAR(7) | NO | | NULL | 페이지 배경 색상 Hex 코드 |
+| `deployed_at` | DATETIME(6) | NO | | NULL | 배포 시각 |
+| `created_at` | DATETIME(6) | NO | | CURRENT_TIMESTAMP(6) | 데이터 삽입 타임스탬프 |
+| `updated_at` | DATETIME(6) | NO | | CURRENT_TIMESTAMP(6) | 데이터 갱신 타임스탬프 (ON UPDATE) |
+| `features_json` | LONGTEXT | NO | | NULL | 과정 특징 목록 JSON 직렬화 문자열 |
+| `curriculum_json` | LONGTEXT | NO | | NULL | 커리큘럼 트랙 목록 JSON 직렬화 문자열 |
+| `target_audience_json`| LONGTEXT | NO | | NULL | 대상 수강생 리스트 JSON 직렬화 문자열 |
+| `stats_json` | LONGTEXT | NO | | NULL | 통계 지표 정보 JSON 직렬화 문자열 |
+| `infos_json` | LONGTEXT | NO | | NULL | 모집 개요 카드 정보 JSON 직렬화 문자열 |
+| `faqs_json` | LONGTEXT | NO | | NULL | FAQ 아코디언 Q&A JSON 직렬화 문자열 |
 
 ### (3) `scraper_configs`
-| 컬럼명 | 데이터 타입 | Null 여부 | 특징 |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | NOT NULL | PK, AUTO_INCREMENT |
-| `enabled` | BOOLEAN | NOT NULL | 수집 파이프라인 전역 동작 여부 |
-| `notify_times` | TEXT | NOT NULL | 수집 수행 시간대 목록 (쉼표 구분, 예: "09:00:00,18:00:00") |
-| `gsheet_ids` | TEXT | NOT NULL | 수집 결과를 밀어넣을 대상 구글 시트 ID 목록 (쉼표 구분) |
-| `receiver_emails` | TEXT | NOT NULL | 수집 이메일 알림 대상 수신 목록 (쉼표 구분) |
-| `keywords` | TEXT | NOT NULL | 나라장터 검색용 키워드 목록 (쉼표 구분, 예: "인공지능,데이터") |
-| `updated_at` | DATETIME | NOT NULL | 설정 정보가 갱신된 타임스탬프 |
+| 컬럼명 | 데이터 타입 | Null 여부 | Key | 기본값 | 특징 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PRI | NULL | PK, AUTO_INCREMENT |
+| `enabled` | TINYINT(1) | NO | | 1 | 수집 파이프라인 전역 동작 여부 |
+| `schedule_mode` | VARCHAR(20) | NO | | daily | 스케줄 주기 모드 (daily 등) |
+| `notify_times` | TEXT | NO | | NULL | 수집 수행 시간대 목록 (쉼표 구분) |
+| `interval_minutes` | INT | NO | | 60 | 반복 실행 주기 분 단위 값 |
+| `dedup_mode` | VARCHAR(40) | NO | | notice_id | 중복 체크 기준 모드 |
+| `dedup_retention_hours`| INT | NO | | 48 | 중복 보존 임계 시간 |
+| `gsheet_ids` | VARCHAR(255) | YES | | NULL | 대상 구글 시트 ID 목록 (쉼표 구분) |
+| `receiver_emails` | TEXT | NO | | NULL | 알림 수신 이메일 목록 (쉼표 구분) |
+| `keywords` | TEXT | NO | | NULL | 검색용 키워드 목록 (쉼표 구분) |
+| `updated_at` | DATETIME(6) | NO | | CURRENT_TIMESTAMP(6) | 설정 정보 갱신 타임스탬프 (ON UPDATE) |
 
 ### (4) `scraper_runs`
-| 컬럼명 | 데이터 타입 | Null 여부 | 특징 |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | NOT NULL | PK, AUTO_INCREMENT |
-| `run_id` | VARCHAR(64) | NOT NULL | 실행 고유 트래킹 ID (UUID4, UNIQUE INDEX 지정) |
-| `source` | VARCHAR(20) | NOT NULL | 호출 출처 (`cloud_run`, `api_server` 등) |
-| `status` | VARCHAR(20) | NOT NULL | `success`, `partial`, `failed` 결과 상태 |
-| `keyword_count` | INT | NOT NULL | 스캔한 키워드 개수 |
-| `notice_count` | INT | NOT NULL | G2B Open API로부터 가져온 전체 원시 공고 개수 |
-| `deduped_count` | INT | NOT NULL | 중복으로 걸러져 제외된 공고 개수 |
-| `email_sent_count` | INT | NOT NULL | 이메일 발송 완료 개수 (보통 1 또는 0) |
-| `sheet_written_count`| INT | NOT NULL | 구글 스프레드시트에 기입 완료된 행 개수 |
-| `error_message` | TEXT | NULL | 작업 처리 중 예외 발생 시 에러 추적 로그 |
-| `executed_at` | DATETIME | NOT NULL | 배치 실행 시각 |
-| `created_at` | DATETIME | NOT NULL | 데이터 삽입 타임스탬프 |
+| 컬럼명 | 데이터 타입 | Null 여부 | Key | 기본값 | 특징 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PRI | NULL | PK, AUTO_INCREMENT |
+| `run_id` | VARCHAR(64) | NO | UNI | NULL | 실행 고유 트래킹 ID (UUID4, UNIQUE INDEX 지정) |
+| `source` | VARCHAR(20) | NO | | NULL | 호출 출처 (`cloud_run`, `api_server` 등) |
+| `status` | VARCHAR(20) | NO | | NULL | `success`, `partial`, `failed` 결과 상태 |
+| `keyword_count` | INT | NO | | NULL | 스캔한 키워드 개수 |
+| `notice_count` | INT | NO | | NULL | G2B Open API로부터 가져온 원시 공고 개수 |
+| `deduped_count` | INT | NO | | NULL | 중복으로 걸러져 제외된 공고 개수 |
+| `email_sent_count` | INT | NO | | NULL | 이메일 발송 완료 개수 |
+| `sheet_written_count`| INT | NO | | NULL | 구글 스프레드시트에 기입 완료된 행 개수 |
+| `error_message` | TEXT | YES | | NULL | 작업 처리 중 예외 발생 시 에러 추적 로그 |
+| `executed_at` | DATETIME | NO | | NULL | 배치 실행 시각 |
+| `created_at` | DATETIME | NO | | NULL | 데이터 삽입 타임스탬프 |
 
 ### (5) `scraper_notices`
-| 컬럼명 | 데이터 타입 | Null 여부 | 특징 |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | NOT NULL | PK, AUTO_INCREMENT |
-| `dedup_key` | VARCHAR(190) | NOT NULL | 중복 체크용 고유 해시 키 (notice_id 또는 title 기반 SHA1, UNIQUE INDEX) |
-| `notice_id` | VARCHAR(160) | NOT NULL | 나라장터 공고 등록 번호 |
-| `title` | VARCHAR(500) | NOT NULL | 공고 타이틀 명칭 |
-| `agency` | VARCHAR(240) | NULL | 공고 발주 공공 기관명 |
-| `estimated_price` | VARCHAR(120) | NULL | 입찰 추정 금액 |
-| `published_at` | DATETIME | NULL | 공고 공식 게시 일시 |
-| `deadline_at` | DATETIME | NULL | 입찰 마감 시각 |
-| `notice_url` | VARCHAR(600) | NULL | 상세 공고 조회 웹페이지 하이퍼링크 |
-| `first_seen_at` | DATETIME | NOT NULL | 시스템에 최초 수집 감지된 일시 |
-| `last_seen_at` | DATETIME | NOT NULL | 배치 스캐너에 의해 최종 재감지된 일시 |
-| `last_run_id` | VARCHAR(64) | NULL | 가장 최근에 수집을 주도한 `scraper_runs.run_id` |
+| 컬럼명 | 데이터 타입 | Null 여부 | Key | 기본값 | 특징 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PRI | NULL | PK, AUTO_INCREMENT |
+| `dedup_key` | VARCHAR(190) | NO | UNI | NULL | 중복 체크용 고유 해시 키 (notice_id 또는 title 기반 SHA1) |
+| `notice_id` | VARCHAR(160) | NO | | NULL | 나라장터 공고 등록 번호 |
+| `title` | VARCHAR(500) | NO | | NULL | 공고 타이틀 명칭 |
+| `agency` | VARCHAR(240) | YES | | NULL | 공고 발주 공공 기관명 |
+| `estimated_price` | VARCHAR(120) | YES | | NULL | 입찰 추정 금액 |
+| `published_at` | DATETIME | YES | | NULL | 공고 공식 게시 일시 |
+| `deadline_at` | DATETIME | YES | | NULL | 입찰 마감 시각 |
+| `notice_url` | VARCHAR(600) | YES | | NULL | 상세 공고 조회 웹페이지 하이퍼링크 |
+| `first_seen_at` | DATETIME | NO | | NULL | 시스템에 최초 수집 감지된 일시 |
+| `last_seen_at` | DATETIME | NO | | NULL | 배치 스캐너에 의해 최종 재감지된 일시 |
+| `last_run_id` | VARCHAR(64) | YES | | NULL | 가장 최근에 수집을 주도한 `scraper_runs.run_id` |
 
 ### (6) `users`
-| 컬럼명 | 데이터 타입 | Null 여부 | 특징 |
-| :--- | :--- | :--- | :--- |
-| `id` | INT | NOT NULL | PK, AUTO_INCREMENT |
-| `username` | VARCHAR(100) | NOT NULL | 로그인용 어드민 아이디 (UNIQUE INDEX) |
-| `password_salt` | VARCHAR(64) | NOT NULL | 비밀번호 단방향 암호화용 고유 랜덤 솔트 |
-| `password_hash` | VARCHAR(128) | NOT NULL | 솔트와 조합하여 해시된 SHA-256 해시값 |
-| `role` | VARCHAR(30) | NOT NULL | 어드민 권한 식별자 (기본 `admin`) |
-| `is_active` | BOOLEAN | NOT NULL | 계정 활성화 여부 |
-| `created_at` / `updated_at` | DATETIME | NOT NULL | 계정 생성 및 갱신 타임스탬프 |
+| 컬럼명 | 데이터 타입 | Null 여부 | Key | 기본값 | 특징 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PRI | NULL | PK, AUTO_INCREMENT |
+| `username` | VARCHAR(100) | NO | UNI | NULL | 로그인용 어드민 아이디 (UNIQUE INDEX) |
+| `password_salt` | VARCHAR(64) | NO | | NULL | 비밀번호 단방향 암호화용 고유 랜덤 솔트 |
+| `password_hash` | VARCHAR(128) | NO | | NULL | 솔트와 조합하여 해시된 SHA-256 해시값 |
+| `role` | VARCHAR(30) | NO | | admin | 어드민 권한 식별자 (기본 `admin`) |
+| `is_active` | TINYINT(1) | NO | | 1 | 계정 활성화 여부 |
+| `created_at` | DATETIME(6) | NO | | CURRENT_TIMESTAMP(6) | 계정 생성 타임스탬프 |
+| `updated_at` | DATETIME(6) | NO | | CURRENT_TIMESTAMP(6) | 계정 수정 타임스탬프 (ON UPDATE) |
+
 
 ---
 
@@ -276,4 +285,3 @@ VM 외부인 Google Cloud Run 환경에 별도로 배포되는 분산 스크래�
 - **Solution (해결 방법)**
     - **Docker 기본 브리지 네트워크 및 Subnet 권한 부여**
     컨테이너에서 호스트로 접근할 때 Docker 기본 게이트웨이 IP(`host.docker.internal`)를 바라보도록 애플리케이션 DB 엔드포인트를 수정했습니다. 또한, MySQL 사용자 권한(Grant) 설정 시 특정 단일 IP가 아닌 Docker 서브넷 대역(`'icore'@'%'`) 전체에 대해 접근을 허용하도록 변경하여, 컨테이너 IP가 동적으로 변경되더라도 유연하게 인증되도록 처리했습니다.
-```
