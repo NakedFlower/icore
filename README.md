@@ -1,4 +1,4 @@
-# iCore 통합 사내 업무 플랫폼 (iCore Integrated Platform)
+# iCore 통합 사내 업무 플랫폼
 
 노코드 랜딩 페이지 구축 빌더와 공공데이터포털(나라장터 G2B) API 연동 스크래핑 및 메일/구글 시트 알림 자동화 기능을 제공하는 **사내 통합 업무 플랫폼** 프로젝트입니다.
 
@@ -20,31 +20,25 @@ graph TD
 ```
 
 ### (1) 외부 트래픽 및 배포 환경
-- **프론트엔드 (관리도구)**: React + Ant Design 기반 웹 클라이언트로, 사용자가 템플릿 기반으로 랜딩페이지를 직접 편집하고 배포하며 스크래퍼 동작을 설정할 수 있습니다.
-- **백엔드 (API 서버)**: FastAPI로 개발된 파이썬 애플리케이션으로 단일 VM 내부에서 도커 컨테이너로 구동됩니다.
+- **프론트엔드**: React + Ant Design 기반 웹 클라이언트로, 사용자가 템플릿 기반으로 랜딩페이지를 직접 편집하고 배포하며 스크래퍼 동작을 설정할 수 있습니다.
+- **백엔드**: FastAPI로 개발된 파이썬 애플리케이션으로 단일 VM 내부에서 도커 컨테이너로 구동됩니다.
 - **데이터베이스**: VM 내부에 로컬 MySQL을 탑재하여 유저 정보, 랜딩페이지 구성 데이터, 스크래퍼 구성 설정값 및 실행 이력을 관리합니다.
-- **GCS (Google Cloud Storage)**: 노코드 빌더로 완성된 정적 HTML 파일과 업로드된 자산(이미지 등)이 GCS 버킷에 바로 배포되며, `Cloud CDN` + `Cloud DNS` + `HTTP(S) Load Balancer`를 결합하여 사용자들에게 지연 시간 없이 안정적으로 서비스됩니다.
+- **GCS**: 노코드 빌더로 완성된 정적 HTML 파일과 업로드된 리소스가 GCS 버킷에 바로 배포되며, `Cloud CDN` + `HTTP(S) Load Balancer`를 결합하여 사용자들에게 서비스됩니다.
 
 ### (2) 스크래퍼 파이프라인 (자동/주기 실행)
 1. **설정 동기화**: 관리자가 UI에서 스크래퍼 실행 설정(알림 시각, 키워드, 메일 등)을 저장하면 백엔드 서버가 DB(`scraper_configs` 테이블)에 쓰고 **Google Cloud Scheduler**의 Cron Job(`icore-g2b-scraper-job-index`)을 실시간으로 업데이트/활성화/일시정지합니다.
 2. **트리거**: 지정된 시각이 되면 Cloud Scheduler가 **Google Cloud Run**의 스크래퍼 워커(`g2b_worker`) 엔드포인트 `/run`을 HTTPS POST로 호출합니다.
 3. **수집**: 워커가 설정에 지정된 검색 키워드를 루프 돌면서 공공데이터포털(나라장터 G2B)의 "입찰공고" 및 "사전규격" API를 직접 호출하여 최근 윈도우(마지막 성공 실행 시점 ~ 현재 시각) 사이의 공고 후보군을 가져옵니다.
-4. **중복 필터링**: 워커가 API 서버의 `/api/scraper/internal/dedup`을 호출하여 DB 내에 이미 존재하는 `dedup_key` (공고 ID 또는 제목의 SHA1 해시값)와 중복되거나, 이전에 발행된(published_at <= last_run_at) 건을 걸러내고 순수 신규 공고만 남깁니다.
-5. **적재**: 워커가 구글 시트 API (`Sheets API`)를 사용하여 설정된 구글 스프레드시트의 `나라장터 공고 수집 목록` 및 `나라장터 사전 규격 수집 목록` 시트 탭에 순수 신규 공고 리스트를 덧붙입니다. 이때 회차(`run_no`)를 자동 산출하여 빈 줄 구분과 함께 서식(배경색, 시간 포맷, Hyperlink 보기 수식 등)을 깔끔하게 반영합니다.
-6. **알림**: 워커가 Gmail API(도메인 권한 위임 활용)를 사용하여 설정된 메일 주소들로 Bcc 형태의 요약 이메일(HTML 테이블 포맷)을 발송하며, 또는 설정된 Apps Script 웹훅을 호출하여 메일 트리거를 수행합니다.
+4. **중복 필터링**: 워커가 API 서버의 `/api/scraper/internal/dedup`을 호출하여 DB 내에 이미 존재하는 `dedup_key` (공고 ID)와 중복되거나, 이전에 발행된(published_at <= last_run_at) 건을 걸러내고 순수 신규 공고만 남깁니다.
+5. **적재**: 워커가 구글 시트 API를 사용하여 설정된 구글 스프레드시트의 `나라장터 공고 수집 목록` 및 `나라장터 사전 규격 수집 목록` 시트 탭에 순수 신규 공고 리스트를 덧붙입니다. 이때 회차(`run_no`)를 자동 산출하여 빈 줄 구분과 함께 서식(배경색, 시간 포맷, Hyperlink 보기 수식 등)을 깔끔하게 반영합니다.
+6. **알림**: 워커가 Gmail API(도메인 권한 위임 활용)를 사용하여 설정된 메일 주소들로 Bcc 형태의 요약 이메일(HTML 테이블 포맷)을 발송합니다.
 7. **리포트**: 작업이 완료되면 워커가 API 서버의 `/api/scraper/runs` 엔드포인트에 성공/부분성공/실패 상태와 스크랩 세부 수치(총 수집 건수, 중복제외 건수 등) 및 에러 로그를 전송하여 실행 이력을 기록합니다.
 
 ---
 
 ## 2. 디렉토리 구조 및 주요 파일 기능 상세
 
-각각의 폴더는 마이크로서비스/멀티 모듈 구조로 독립적으로 작성되어 있으며, 상세 내역은 아래와 같습니다:
-
-### [ROOT] (c:\Users\User\Desktop\icore)
-- [package.json](file:///c:/Users/User/Desktop/icore/package.json): 최상위 패키지 설정.
-- [migration.sql](file:///c:/Users/User/Desktop/icore/migration.sql) / [migration2.sql](file:///c:/Users/User/Desktop/icore/migration2.sql): DB 스키마 마이그레이션용 보조 SQL 쿼리문.
-
-### 1) 백엔드 모듈 (c:\Users\User\Desktop\icore\back)
+### 1) 백엔드 모듈
 FastAPI를 활용한 API 웹 서비스 엔진입니다. GCS 및 Cloud Scheduler 제어 라이브러리를 포함합니다.
 
 #### 주요 스크립트 및 디렉토리
@@ -77,7 +71,7 @@ FastAPI를 활용한 API 웹 서비스 엔진입니다. GCS 및 Cloud Scheduler 
     - 스크래핑된 공고 목록에 대해 `published_at <= last_run_at` 검사 및 `dedup_key` 대조를 통한 중복 필터링 로직 구현.
     - API 서버가 VM 내에서 직접 나라장터를 긁어서 시트에 넣고 메일을 쏠 수 있는 독립적인 단일 수동 파이프라인(`run_scraper_pipeline`) 내장.
 
-### 2) 프론트엔드 어드민 앱 (c:\Users\User\Desktop\icore\front)
+### 2) 프론트엔드 어드민 앱
 React + Vite + Ant Design 환경으로 설계된 반응형 웹 SPA 어드민 제어 센터입니다.
 
 - [vite.config.js](file:///c:/Users/User/Desktop/icore/front/vite.config.js): 빌더 포트 및 proxy 설정을 위한 Vite 번들러 세팅.
@@ -95,7 +89,7 @@ React + Vite + Ant Design 환경으로 설계된 반응형 웹 SPA 어드민 제
   - [SiteManager.jsx](file:///c:/Users/User/Desktop/icore/front/src/pages/SiteManager.jsx): 배포된 페이지 테이블 목록. 실시간으로 사이트 도메인 바로가기 가능 및 대주제/소주제, 상태(active/paused/archived) 편집 모달 및 소프트 딜리트 제공.
   - [ScraperControl.jsx](file:///c:/Users/User/Desktop/icore/front/src/pages/ScraperControl.jsx): 수집기 활성화 스위치, 복수 알림 시간 동적 관리(TimePicker 배열), 시트 ID 목록 및 이메일/키워드 태그 관리. 즉시 배치 실행 버튼 및 하단에 실행 이력 모니터링 테이블 렌더링.
 
-### 3) 클라우드 런 스크래퍼 워커 (c:\Users\User\Desktop\icore\back\cloudrun\g2b_worker)
+### 3) 클라우드 런 스크래퍼 워커
 VM 외부인 Google Cloud Run 환경에 별도로 배포되는 분산 스크래퍼 워커 모듈입니다.
 
 - [main.py](file:///c:/Users/User/Desktop/icore/back/cloudrun/g2b_worker/main.py): FastAPI 단일 구조. (53KB)
@@ -106,7 +100,7 @@ VM 외부인 Google Cloud Run 환경에 별도로 배포되는 분산 스크래�
   - Gmail API (Domain-Wide Impersonation)를 활용하여 수신자 메일로 Bcc 알림 HTML 메일 발송.
   - 최종 완료 및 예외 발생 보고를 백엔드 API 서버의 `POST /runs`로 쏘고 종료.
 
-### 4) 부트캠프 랜딩페이지 리액트 원본 소스 (c:\Users\User\Desktop\icore\bootcamp-landing-page-template)
+### 4) 부트캠프 랜딩페이지 리액트 원본 소스
 이 폴더는 노코드 빌더가 생성하는 정적 페이지의 프레임워크가 된 원본 리액트 코드입니다.
 - [src/App.tsx](file:///c:/Users/User/Desktop/icore/bootcamp-landing-page-template/src/App.tsx): Framer Motion 애니메이션과 Tailwind CSS 스타일을 차용한 백엔드 개발자 부트캠프 소개용 단일 컴포넌트입니다. 본 코드를 기반으로 노코드 빌더에서 HTML/CSS 파편화 작업을 거친 뒤, 동적으로 데이터 영역(Context)을 갈아 끼워 GCS 정적 파일로 업로드하는 렌더링 엔진(`platform_service.py` 내부 렌더러)이 탄생했습니다.
 
@@ -133,7 +127,7 @@ VM 외부인 Google Cloud Run 환경에 별도로 배포되는 분산 스크래�
   - **2단계 (DB 영구 중복 방지)**: 공고 ID 혹은 제목을 SHA-1 해시로 변환하여 유일한 `dedup_key`를 추출합니다. 이 키가 MySQL DB의 `scraper_notices` 테이블에 존재하는지 쿼리하여 이미 긁어갔던 공고는 수집 리스트에서 즉각 배제합니다.
 - **구글 시트 적재 형식**:
   - `_append_to_sheet` 함수가 호출되면, 대상 구글 시트의 A열을 긁어 행 데이터 중 숫자로 표기된 값을 찾아 `최대값 + 1`을 하여 수집 회차(`run_no`)를 생성합니다.
-  - 시트 구조가 무한대로 누적되는 데이터 분석에 용이하도록 공고 행들을 밀어넣기 전에 빈 줄(`["", "", "", "", "", ""]`) 한 줄을 깔끔하게 넣고, 그 다음 회차와 시각 행(`[run_no, collected_at, "", "", "", ""]`)을 삽입하여 시인성을 극대화합니다.
+  - 시트 구조가 무한대로 누적되는 데이터 분석에 용이하도록 공고 행들을 밀어넣기 전에 빈 줄을 넣고, 그 다음 회차와 시각 행을 삽입하여 시인성을 극대화합니다.
   - 공고 본 데이터의 링크 열에는 구글 시트 수식 `=HYPERLINK("공고 링크", "보기")` 형태로 주입하여 링크가 보기 편하게 동작합니다.
   - 적재 완료 후, 새로 추가된 구역에만 batchUpdate API를 사용해 배경색 설정(회차 헤더에 회색 배경 적용) 및 시간 열 서식 고정(실수 타입 시리얼 번호가 노출되는 현상 방지)을 실행합니다.
 - **이메일 및 웹훅 통합**:
