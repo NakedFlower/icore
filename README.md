@@ -15,18 +15,7 @@
 
 ## 1. 전체 아키텍처 개요 및 인프라 흐름
 
-```mermaid
-graph TD
-    A[관리자 UI - React/front] <-->|API 요청 / JWT 인증| B[API 서버 - FastAPI/back]
-    B <-->|설정 & 실행이력 저장| C[(MySQL DB)]
-    B -->|Storage API| D[Google Cloud Storage]
-    B -->|Scheduler API| E[Cloud Scheduler]
-    E -->|주기적 POST /run 호출| F[Scraper Worker - Cloud Run]
-    F -->|G2B Open API 요청| G[나라장터 G2B API]
-    F <-->| internal/dedup API 호출 | B
-    F -->|Sheets API| H[Google Sheets]
-    F -->|Gmail API / Apps Script Webhook| I[Apps Script / Gmail]
-```
+<img width="565" height="646" alt="아이코어이앤씨 사내 플랫폼 아키텍처 drawio" src="https://github.com/user-attachments/assets/19938cbf-ac16-449f-adfc-76bfd5f53853" />
 
 ### (1) 외부 트래픽 및 배포 환경
 - **프론트엔드**: React + Ant Design 기반 웹 클라이언트로, 사용자가 템플릿 기반으로 랜딩페이지를 직접 편집하고 배포하며 스크래퍼 동작을 설정할 수 있습니다.
