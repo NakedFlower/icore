@@ -239,30 +239,41 @@ VM 외부인 Google Cloud Run 환경에 별도로 배포되는 분산 스크래�
 
 ---
 
-## 5. 로컬 개발 및 기동 명령어 가이드
+## 5. TroubleShooting
+### 1. Cloud SQL 비용 이슈 및 직접 구축에 따른 DB 환경 관리 문제
 
-### 1) 백엔드 API 서버 (Local VM 가정)
-의존성 패키지를 설치하고 FastAPI 서버를 8000번 포트로 구동합니다.
-```bash
-cd back
-pip install -r requirements.txt
-# 로컬 개발 서버 구동 (실행 시 bootstrap 시딩 로직 자동 수행)
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
+- **Problem (문제 상황)**
+    - 초기 아키텍처에서는 관리 편의성을 위해 GCP Cloud SQL을 도입했으나, 운영 비용이 예상보다 높게 청구되는 문제가 발생했습니다.
+    - 비용 절감을 위해 GCE (VM 인스턴스) 내부에 MySQL을 직접 설치하여 운영하는 방식으로 전환했습니다.
+    - 하지만 관리형 서비스가 제공하던 기능들을 직접 제어해야 하면서, **DB 서버의 시간(Timezone) 동기화, 사용자 권한 관리, 초기 테이블 셋업 등의 관리 복잡성이 증가**하는 이슈를 겪었습니다.
+- **Solution (해결 방법)**
+    - **테이블 관리:** `db-init.sql` 파일을 별도로 작성하여 초기 스키마 셋업과 기초 데이터 삽입 등 필요한 SQL 문을 문서화하고, DB 배포 시 이를 통해 테이블 생성이 자동화되도록 구성했습니다.
+    - **DB 시간 관리:** 애플리케이션과 DB 간의 시간 불일치를 막기 위해, 호스트 VM의 OS 타임존을 한국 시간(KST)으로 동기화(`timedatectl set-timezone Asia/Seoul`)하고, MySQL 설정 파일(`my.cnf`)에 `default-time-zone='+09:00'`을 명시하여 데이터 정합성을 확보했습니다.
+    - **사용자 관리:** 보안을 위해 `root` 계정의 외부 접근을 차단하고, 애플리케이션에서 접근할 서비스 전용 계정과 관리자용 계정을 분리하여 생성했습니다.
 
-### 2) 프론트엔드 어드민 제어기
-Vite 로컬 개발 서버를 5173번 등의 기본 포트로 구동합니다.
-```bash
-cd front
-npm install
-# 로컬 개발 서버 기동
-npm run dev
-```
+### 2. 메일 자동화 구현 시 Gmail API 연동 및 유지보수성 문제
 
-### 3) 독립형 스크래퍼 워커 (GCS/Cloud Run 로컬 시뮬레이션 시)
-```bash
-cd back/cloudrun/g2b_worker
-pip install -r ../../requirements.txt
-# 또는 fastapi & uvicorn 구동
-uvicorn main:app --host 0.0.0.0 --port 8080 --reload
+- **Problem (문제 상황)**
+    - 서비스 내 자동 메일 전파 기능을 구현하기 위해 초기에는 Google Apps Script 사용을 고려했습니다.
+    - 하지만 Apps Script는 단순 기능 구현에는 용이하나, 추후 애플리케이션 코드와의 통합, 버전 관리 및 유지보수 관점에서는 부적절하다고 판단했습니다.
+    - 메일 자동화 구현 시에 방법이 여러 가지 있으나 비즈니스 상황을 고려할 때 선택지를 제거할 필요가 있었습니다.
+        1. SendGrid
+        2. SMTP 구현
+        3. Apps Script 내 호출(Google Sheet 저장과 동시에 Apps Script 함수 호출)
+        4. 서비스 계정의 권한 획득 이후 Gmail API를 통한 이메일 전송
+        
+- **Solution (해결 방법)**
+    - GCP Native 환경에서 직접 제어하는 아키텍처로 방향을 수정했습니다.
+    - 사내 Google Workspace 도메인 관리자에게 요청하여, 메일 전송을 담당할 GCP 서비스 계정(Service Account)에 Gmail API 전송 권한(Domain-wide Delegation)을 부여받았습니다.
+    - 이를 통해 서비스 계정의 JSON Key 인증 방식으로 애플리케이션 단에서 안전하게 인증을 처리하고, 시스템 내에서 내 메일로 자동 전파가 이루어지도록 인프라를 구축했습니다.
+
+### 3. Docker 컨테이너의 동적 IP로 인한 DB 접속 및 인증 실패 문제
+
+- **Problem (문제 상황)**
+    - 애플리케이션은 Docker 컨테이너 환경으로 구축하고, DB(MySQL)는 호스트 VM 자체에 설치된 상태로 운영했습니다.
+    - 컨테이너 이미지를 수정하고 새로 배포(Push & Run)할 때마다 컨테이너 내부 IP가 계속 동적으로 변경되는 문제가 발생했습니다.
+    - 이로 인해 DB 측에서 특정 IP에 대한 접근 권한을 고정할 수 없었고, 컨테이너가 호스트 VM의 DB를 찾지 못해 인증 및 연결이 거부되는 현상이 나타났습니다.
+- **Solution (해결 방법)**
+    - **Docker 기본 브리지 네트워크 및 Subnet 권한 부여**
+    컨테이너에서 호스트로 접근할 때 Docker 기본 게이트웨이 IP(`host.docker.internal`)를 바라보도록 애플리케이션 DB 엔드포인트를 수정했습니다. 또한, MySQL 사용자 권한(Grant) 설정 시 특정 단일 IP가 아닌 Docker 서브넷 대역(`'icore'@'%'`) 전체에 대해 접근을 허용하도록 변경하여, 컨테이너 IP가 동적으로 변경되더라도 유연하게 인증되도록 처리했습니다.
 ```
