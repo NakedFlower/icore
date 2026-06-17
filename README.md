@@ -72,9 +72,8 @@ FastAPI를 활용한 API 웹 서비스 엔진입니다. GCS 및 Cloud Scheduler 
     - API 서버가 VM 내에서 직접 나라장터를 긁어서 시트에 넣고 메일을 쏠 수 있는 독립적인 단일 수동 파이프라인(`run_scraper_pipeline`) 내장.
 
 ### 2) 프론트엔드 어드민 앱
-React + Vite + Ant Design 환경으로 설계된 반응형 웹 SPA 어드민 제어 센터입니다.
+React + Ant Design 환경으로 설계된 반응형 웹 SPA 어드민 제어 센터입니다.
 
-- [vite.config.js](file:///c:/Users/User/Desktop/icore/front/vite.config.js): 빌더 포트 및 proxy 설정을 위한 Vite 번들러 세팅.
 - [src/main.jsx](file:///c:/Users/User/Desktop/icore/front/src/main.jsx): React 애플리케이션 진입 노드 마운트.
 - [src/App.jsx](file:///c:/Users/User/Desktop/icore/front/src/App.jsx): 전역 인증 여부에 따른 라우팅 제어 (미인증 시 로그인 화면 노출, 인증 시 레이아웃 셸과 각 페이지 전환 제어).
 - [src/api/client.js](file:///c:/Users/User/Desktop/icore/front/src/api/client.js): Axios 인스턴스 설정. 요청 헤더에 로컬스토리지 Bearer JWT 토큰을 매번 주입. 백엔드 통신용 매퍼 함수들 정의.
