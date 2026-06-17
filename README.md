@@ -109,18 +109,17 @@ VM 외부인 Google Cloud Run 환경에 별도로 배포되는 분산 스크래�
 
 ### 1) 노코드 랜딩페이지 렌더링 및 GCS 배포 흐름
 - **템플릿 로드**: 백엔드 [platform_service.py](file:///c:/Users/User/Desktop/icore/back/app/services/platform_service.py)의 `get_template_detail`에서 GCS 버킷에 보관된 각 템플릿의 JSON 기본 구조 데이터를 읽어옵니다.
-- **이미지 업로드**: 프론트에서 업로드한 이미지(메인 히어로 이미지, 강사 이미지, 커리큘럼 이미지 등)는 base64 문자열로 수신된 후, 백엔드 내부에서 바이너리로 변환되어 GCS 버킷(`landings/{clean_topic}/{slug}/assets/`)에 영구 보존용 파일로 업로드되며, 최종 HTML에는 GCS 웹 링크 URL로 치환되어 꽂힙니다.
+- **이미지 업로드**: 프론트에서 업로드한 이미지(메인 히어로 이미지, 강사 이미지, 커리큘럼 이미지 등)는 base64 문자열로 수신된 후, 백엔드 내부에서 바이너리로 변환되어 GCS 버킷(`landings/{clean_topic}/{slug}/assets/`)에 업로드되며, 최종 HTML에는 GCS 웹 링크 URL이 반환됩니다.
 - **HTML 조립**:
-  - `_build_landing_context` 함수가 입력값(텍스트 문구, 컬러, JSON 데이터 등)을 받아 HTML 전용 특수문자를 이스케이프(`escape()`)합니다.
-  - 추천 대상 리스트, 과정 특징 카드들, STEP별 커리큘럼 아코디언, 카운터 통계 태그 등을 동적으로 렌더링해 문자열 변수로 구축합니다.
-  - 템플릿별로 미리 준비된 표준 HTML 양식(`_render_clean_campaign` 등)과 합치고, 통계 카운트업 스크립트, 스크롤 페이드인(IntersectionObserver) 스크립트, smooth scroll 스크립트가 내장된 최종 HTML을 완성합니다.
-- **배포 및 캐시 제어**: 조립된 HTML 파일은 `landings/{clean_topic}/{slug}/index.html` 경로로 GCS 버킷에 쓰여집니다. 이때, 랜딩페이지 업데이트가 즉각 웹 브라우저에 배포되도록 캐시 컨트롤 헤더를 `no-cache, max-age=0`으로 세팅합니다.
+  - `_build_landing_context` 함수가 입력값(텍스트 문구, 컬러, JSON 데이터 등)을 받아 HTML 전용 특수문자를 이스케이프합니다.
+  - 추천 대상 리스트, 과정 특징 카드들, STEP별 커리큘럼, 카운터 통계 등을 동적으로 렌더링해 문자열 변수로 구축합니다.
+  - 템플릿별로 미리 준비된 HTML 양식과 합치고, 통계 카운트업 스크립트, 스크롤 페이드인 스크립트, smooth scroll 스크립트가 내장된 최종 HTML을 완성합니다.
+- **배포 및 캐시 제어**: 조립된 HTML 파일은 GCS 버킷에 쓰여집니다. 이때, 랜딩페이지 업데이트가 즉각 웹 브라우저에 배포되도록 캐시 컨트롤 헤더를 `no-cache, max-age=0`으로 세팅합니다.
 
 ### 2) G2B 나라장터 공고 수집 및 중복 필터링 정책
-- **조회 윈도우(Time Window) 결정**:
-  - 스크래퍼 워커가 실행되면 우선 API 서버에 `GET /internal/last-run`을 호출하여 가장 최근에 성공한 스크래퍼 배치 시각(`last_run_at`)을 응답받습니다.
+- **조회 윈도우 결정**:
+  - 스크래퍼 워커가 실행되면 우선 API 서버에 `GET /internal/last-run`을 호출하여 가장 최근에 성공한 스크래퍼 배치 시각을 응답받습니다.
   - `inqryBgnDt`는 `last_run_at`으로, `inqryEndDt`는 현재 시각으로 설정하여 그 사이의 공고만 G2B API에서 긁어옵니다. 이력이 없으면 최근 1일(24시간) 간의 윈도우로 작동합니다.
-- **XML/JSON 다중 파싱**: 나라장터 API 서버의 불안정한 Content-Type 응답(JSON을 요청했으나 에러 발생 시 XML 바디 또는 에러 코드 XML을 뱉음)에 대응하여, `requests.exceptions.JSONDecodeError` 발생 시 XML 파서(`xml.etree.ElementTree`)로 우회하여 성공 메시지(`resultCode == "00"`)와 결과 데이터를 파싱하도록 예외처리가 매우 촘촘하게 설계되어 있습니다.
 - **2단계 중복 필터링**:
   - **1단계 (시간 필터)**: 수집된 공고 중, 발행 시점(`published_at`)이 이전 성공 실행 시각(`since_notified_at`)보다 이전인 경우 필터링하여 버립니다.
   - **2단계 (DB 영구 중복 방지)**: 공고 ID 혹은 제목을 SHA-1 해시로 변환하여 유일한 `dedup_key`를 추출합니다. 이 키가 MySQL DB의 `scraper_notices` 테이블에 존재하는지 쿼리하여 이미 긁어갔던 공고는 수집 리스트에서 즉각 배제합니다.
